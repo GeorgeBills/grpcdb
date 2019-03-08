@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package grpcdb;
+
+// https://www.sqlite.org/syntaxdiagrams.html
+
+message Statement {
+    oneof statement {
+        Select select = 1;
+    }
+}
+
+message Select {
+    DistinctAll distinct_all = 1;
+    repeated string result_column = 2;
+    string from = 3;
+    repeated Join join = 4;
+    repeated Where where = 5;
+    GroupByHaving group_by_having = 6;
+    OrderBy order_by = 7;
+    LimitOffset limit_offset = 8;  
+}
+
+enum DistinctAll {
+    DISTINCT = 0;
+    ALL = 1;
+}
+
+message Join {
+}
+
+message Where {
+}
+
+message GroupByHaving {
+    Having having = 6;
+}
+
+message Having {
+}
+
+message OrderBy {
+    repeated OrderingTerm ordering_term = 1;
+}
+
+message OrderingTerm {
+}
+
+message LimitOffset {
+}

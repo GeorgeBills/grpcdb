@@ -2,13 +2,9 @@ syntax = "proto3";
 
 package grpcdb;
 
-// https://www.sqlite.org/syntaxdiagrams.html
+import "expression.proto";
 
-message Statement {
-    oneof statement {
-        Select select = 1;
-    }
-}
+// https://www.sqlite.org/syntaxdiagrams.html#select-stmt
 
 message Select {
     DistinctAll distinct_all = 1;
@@ -27,6 +23,19 @@ enum DistinctAll {
 }
 
 message Join {
+    bool natural = 1;
+    JoinType join_type = 2;
+    string table = 3;
+    Expr expr = 4;
+}
+
+enum JoinType {
+    INNER = 0; // inner is the default join type
+    LEFT = 1;
+    LEFT_OUTER = 2;
+    RIGHT = 3;
+    RIGHT_OUTER = 4;
+    CROSS = 5;
 }
 
 message Where {

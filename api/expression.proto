@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package grpcdb;
+
+// https://www.sqlite.org/syntaxdiagrams.html#expr
+
+message Expr {
+    oneof expr {
+        Col col = 1;
+        UnaryExpr unary_expr = 2;
+        BinaryExpr binary_expr = 3;
+    }
+}
+
+message Col {
+    string schema = 1;
+    string table = 2;
+    string column = 3;
+}
+
+message UnaryExpr {
+    UnaryOp op = 1;
+    Expr expr = 2;
+}
+
+enum UnaryOp {
+    UNKNOWN_UO = 0;
+    NOT = 1;
+}
+
+// x = 3, a < b
+message BinaryExpr {
+    Expr expr1 = 1;
+    BinaryOp op = 2;
+    Expr expr2 = 3;
+}
+
+enum BinaryOp {
+    UNKNOWN_BO = 0;
+    EQ = 1;
+    NE = 2;
+    GT = 3;
+    GTE = 4;
+    LT = 5;
+    LTE = 6;
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package grpcdb;
+
+import "select.proto";
+
+// https://www.sqlite.org/syntaxdiagrams.html
+
+message Statement {
+    oneof statement {
+        Select select = 1;
+    }
+}

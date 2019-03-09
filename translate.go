@@ -3,6 +3,7 @@ package grpcdb
 import (
 	"fmt"
 	pb "github.com/GeorgeBills/grpcdb/api"
+	"strconv"
 	"strings"
 )
 
@@ -36,6 +37,14 @@ func TranslateStatement(s *pb.Statement) (string, error) {
 			if err != nil {
 				return "", err
 			}
+		}
+		if sel.Limit != 0 {
+			sb.WriteString(" LIMIT ")
+			sb.WriteString(strconv.Itoa(int(sel.Limit)))
+		}
+		if sel.Offset != 0 {
+			sb.WriteString(" OFFSET ")
+			sb.WriteString(strconv.Itoa(int(sel.Offset)))
 		}
 		return sb.String(), nil
 	default:

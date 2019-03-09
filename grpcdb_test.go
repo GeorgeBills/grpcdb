@@ -39,6 +39,25 @@ func TestTranslation(t *testing.T) {
 				NewSelect("t", "x").
 				AddOrderBy(grpcdb.NewColumn("y"), pb.OrderingDirection_DESC),
 		},
+		{
+			"SELECT x FROM t LIMIT 123",
+			grpcdb.
+				NewSelect("t", "x").
+				SetLimit(123),
+		},
+		{
+			"SELECT x FROM t OFFSET 456",
+			grpcdb.
+				NewSelect("t", "x").
+				SetOffset(456),
+		},
+		{
+			"SELECT x FROM t LIMIT 10 OFFSET 10",
+			grpcdb.
+				NewSelect("t", "x").
+				SetLimit(10).
+				SetOffset(10),
+		},
 	}
 	for _, tt := range table {
 		t.Run(tt.sql, func(t *testing.T) {

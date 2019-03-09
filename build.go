@@ -114,6 +114,20 @@ func (sb *StatementBuilder) AddOrderBy(expr *pb.Expr, dir pb.OrderingDirection) 
 	return sb
 }
 
+// SetLimit sets the limit on the statement.
+func (sb *StatementBuilder) SetLimit(limit uint64) *StatementBuilder {
+	sel := sb.statement.GetSelect()
+	sel.Limit = limit
+	return sb
+}
+
+// SetOffset sets the offset on the statement.
+func (sb *StatementBuilder) SetOffset(offset uint64) *StatementBuilder {
+	sel := sb.statement.GetSelect()
+	sel.Offset = offset
+	return sb
+}
+
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *StatementBuilder) Statement() (*pb.Statement, error) {

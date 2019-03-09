@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/common.proto
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/delete.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/expression.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/grpcdb.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/insert.proto
@@ -26,6 +28,13 @@ func TranslateStatement(s *pb.Statement) (string, error) {
 	case *pb.Statement_Insert:
 		ins := s.GetInsert()
 		err := translateInsertStatement(sb, ins)
+		if err != nil {
+			return "", err
+		}
+		return sb.String(), nil
+	case *pb.Statement_Delete:
+		del := s.GetDelete()
+		err := translateDeleteStatement(sb, del)
 		if err != nil {
 			return "", err
 		}
@@ -93,6 +102,18 @@ func translateInsertStatement(sb *strings.Builder, ins *pb.Insert) error {
 		sb.WriteString(")")
 		if i != lasti {
 			sb.WriteString(", ")
+		}
+	}
+	return nil
+}
+
+func translateDeleteStatement(sb *strings.Builder, del *pb.Delete) error {
+	sb.WriteString("DELETE FROM ")
+	translateSchemaTable(sb, del.From)
+	for _, where := range del.Where {
+		err := translateWhere(sb, where)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

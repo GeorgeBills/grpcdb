@@ -76,6 +76,12 @@ func TestTranslation(t *testing.T) {
 					"x", "y",
 				),
 		},
+		{
+			"DELETE FROM t WHERE x <= 0",
+			grpcdb.
+				NewDelete(grpcdb.NewTable("t")).
+				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("0"), pb.BinaryOp_LTE)),
+		},
 	}
 	for _, tt := range table {
 		t.Run(tt.sql, func(t *testing.T) {

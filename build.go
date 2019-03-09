@@ -67,6 +67,19 @@ func NewInsert(into *pb.SchemaTable, toInsert *pb.ToInsert, columns ...string) *
 	}
 }
 
+// NewDelete returns a new delete statement builder.
+func NewDelete(from *pb.SchemaTable) *StatementBuilder {
+	return &StatementBuilder{
+		statement: &pb.Statement{
+			Statement: &pb.Statement_Delete{
+				Delete: &pb.Delete{
+					From: from,
+				},
+			},
+		},
+	}
+}
+
 // AddWhere adds a where clause.
 func (sb *StatementBuilder) AddWhere(expr *pb.Expr) *StatementBuilder {
 	if sb.err != nil {
@@ -76,6 +89,9 @@ func (sb *StatementBuilder) AddWhere(expr *pb.Expr) *StatementBuilder {
 	case *pb.Statement_Select:
 		sel := sb.statement.GetSelect()
 		sel.Where = append(sel.Where, expr)
+	case *pb.Statement_Delete:
+		del := sb.statement.GetDelete()
+		del.Where = append(del.Where, expr)
 	default:
 		sb.err = fmt.Errorf("Statement type %T does not support AddWhere()", sb.statement.Statement)
 	}

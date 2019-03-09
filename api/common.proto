@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package grpdcbpb;
+
+message SchemaTable {
+    string schema = 1;
+    string table = 2;
+}
+
+message Col {
+    string schema = 1;
+    string table = 2;
+    string column = 3;
+}

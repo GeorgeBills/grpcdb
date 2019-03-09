@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package grpdcbpb;
 
+import "common.proto";
+
 // https://www.sqlite.org/syntaxdiagrams.html#expr
 
 message Expr {
@@ -11,12 +13,6 @@ message Expr {
         UnaryExpr unary_expr = 3;
         BinaryExpr binary_expr = 4;
     }
-}
-
-message Col {
-    string schema = 1;
-    string table = 2;
-    string column = 3;
 }
 
 message UnaryExpr {

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package grpdcbpb;
+
+import "common.proto";
+import "expression.proto";
+
+// https://www.sqlite.org/syntaxdiagrams.html#delete-stmt
+
+message Delete {
+    SchemaTable from = 1;
+    repeated Expr where = 2;
+}

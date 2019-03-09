@@ -77,7 +77,7 @@ func (sb *StatementBuilder) AddJoin(table string, joinExpr *pb.Expr) *StatementB
 		sel := sb.statement.GetSelect()
 		join := &pb.Join{
 			Table: table,
-			Expr:  joinExpr,
+			On:    joinExpr,
 		}
 		sel.Join = append(sel.Join, join)
 	default:

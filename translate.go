@@ -60,10 +60,10 @@ func translateJoin(sb *strings.Builder, j *pb.Join) error {
 	sb.WriteString(" JOIN ")
 	sb.WriteString(j.Table)
 	sb.WriteString(" ON ")
-	if j.Expr == nil {
+	if j.On == nil {
 		return fmt.Errorf("nil expression in join %+v", j)
 	}
-	translateExpr(sb, j.Expr)
+	translateExpr(sb, j.On)
 	return nil
 }
 

@@ -72,6 +72,14 @@ func TestTranslation(t *testing.T) {
 				GroupBy(grpcdb.NewLiteral("a"), grpcdb.NewLiteral("b")),
 		},
 		{
+			"SELECT x FROM t GROUP BY a HAVING c < 0 AND d = 3",
+			grpcdb.
+				NewSelect("t", "x").
+				GroupBy(grpcdb.NewLiteral("a")).
+				Having(grpcdb.NewBinaryExpression(grpcdb.NewColumn("c"), grpcdb.NewLiteral("0"), pb.BinaryOp_LT)).
+				Having(grpcdb.NewBinaryExpression(grpcdb.NewColumn("d"), grpcdb.NewLiteral("3"), pb.BinaryOp_EQ)),
+		},
+		{
 			"INSERT INTO t (x, y, z) VALUES (1, 2, 3)",
 			grpcdb.
 				NewInsert(

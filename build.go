@@ -1,6 +1,7 @@
 package grpcdb
 
 import (
+	"errors"
 	pb "github.com/GeorgeBills/grpcdb/api"
 )
 
@@ -127,6 +128,17 @@ func (sb *SelectStatementBuilder) GroupBy(expr ...*pb.Expr) *SelectStatementBuil
 	for _, e := range expr {
 		sb.sel.GroupBy = append(sb.sel.GroupBy, e)
 	}
+	return sb
+}
+
+func (sb *SelectStatementBuilder) Having(expr *pb.Expr) *SelectStatementBuilder {
+	if sb.err != nil {
+		return sb
+	}
+	if sb.sel.GroupBy == nil {
+		sb.err = errors.New("HAVING without GROUP BY is invalid; you must add the GROUP BY first")
+	}
+	sb.sel.Having = And(sb.sel.Having, expr)
 	return sb
 }
 

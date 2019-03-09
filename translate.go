@@ -86,6 +86,10 @@ func translateSelectStatement(sb *strings.Builder, sel *pb.Select) error {
 			}
 		}
 	}
+	if sel.Having != nil {
+		sb.WriteString(" HAVING ")
+		translateExpr(sb, sel.Having)
+	}
 	if sel.Limit != 0 {
 		sb.WriteString(" LIMIT ")
 		sb.WriteString(strconv.Itoa(int(sel.Limit)))

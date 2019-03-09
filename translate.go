@@ -19,7 +19,10 @@ func TranslateStatement(s *Statement) (string, error) {
 		sb.WriteString(strings.Join(sel.ResultColumn, ", ") + " ")
 		sb.WriteString("FROM " + sel.From)
 		for _, join := range sel.Join {
-			translateJoin(sb, join)
+			err := translateJoin(sb, join)
+			if err != nil {
+				return "", err
+			}
 		}
 		return sb.String(), nil
 	default:
@@ -48,6 +51,9 @@ func translateJoin(sb *strings.Builder, j *Join) error {
 	sb.WriteString(" JOIN ")
 	sb.WriteString(j.Table)
 	sb.WriteString(" ON ")
+	if j.Expr == nil {
+		return fmt.Errorf("nil expression in join %+v", j)
+	}
 	translateExpr(sb, j.Expr)
 	return nil
 }

@@ -30,15 +30,15 @@ func TestTranslation(t *testing.T) {
 			"SELECT a FROM t WHERE x > 3",
 			builder.
 				NewSelect("t", "a").
-				AddWhere(builder.NewBinaryExpression(builder.NewColumn("x"), builder.NewLiteral("3"), pb.BinaryOp_GT)),
+				Where(builder.NewBinaryExpression(builder.NewColumn("x"), builder.NewLiteral("3"), pb.BinaryOp_GT)),
 		},
 		{
 			"WHERE AND",
 			"SELECT a FROM t WHERE 3 < x AND 2 != y",
 			builder.
 				NewSelect("t", "a").
-				AddWhere(builder.NewBinaryExpression(builder.NewLiteral("3"), builder.NewColumn("x"), pb.BinaryOp_LT)).
-				AddWhere(builder.NewBinaryExpression(builder.NewLiteral("2"), builder.NewColumn("y"), pb.BinaryOp_NE)),
+				Where(builder.NewBinaryExpression(builder.NewLiteral("3"), builder.NewColumn("x"), pb.BinaryOp_LT)).
+				Where(builder.NewBinaryExpression(builder.NewLiteral("2"), builder.NewColumn("y"), pb.BinaryOp_NE)),
 		},
 		{
 			"JOIN",
@@ -123,7 +123,7 @@ func TestTranslation(t *testing.T) {
 			"DELETE FROM t WHERE x <= 0",
 			builder.
 				NewDelete(builder.NewTable("t")).
-				AddWhere(builder.NewBinaryExpression(builder.NewColumn("x"), builder.NewLiteral("0"), pb.BinaryOp_LTE)),
+				Where(builder.NewBinaryExpression(builder.NewColumn("x"), builder.NewLiteral("0"), pb.BinaryOp_LTE)),
 		},
 		{
 			"UPDATE",
@@ -141,7 +141,7 @@ func TestTranslation(t *testing.T) {
 				Set("a", builder.NewLiteral("0")).
 				Set("b", builder.NewLiteral("1")).
 				Set("c", builder.NewLiteral("2")).
-				AddWhere(builder.NewBinaryExpression(builder.NewColumn("d"), builder.NewLiteral("3"), pb.BinaryOp_GTE)),
+				Where(builder.NewBinaryExpression(builder.NewColumn("d"), builder.NewLiteral("3"), pb.BinaryOp_GTE)),
 		},
 	}
 	for _, tt := range table {

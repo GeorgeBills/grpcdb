@@ -29,7 +29,7 @@ func (sb *UpdateStatementBuilder) Set(col string, to *pb.Expr) *UpdateStatementB
 	return sb
 }
 
-func (sb *UpdateStatementBuilder) AddWhere(expr *pb.Expr) *UpdateStatementBuilder {
+func (sb *UpdateStatementBuilder) Where(expr *pb.Expr) *UpdateStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}

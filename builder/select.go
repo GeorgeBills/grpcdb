@@ -20,8 +20,8 @@ func NewSelect(from string, columns ...string) *SelectStatementBuilder {
 	}
 }
 
-// AddWhere adds a where clause.
-func (sb *SelectStatementBuilder) AddWhere(expr *pb.Expr) *SelectStatementBuilder {
+// Where adds a where clause.
+func (sb *SelectStatementBuilder) Where(expr *pb.Expr) *SelectStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}

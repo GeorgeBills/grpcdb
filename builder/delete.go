@@ -18,7 +18,7 @@ func NewDelete(from *pb.SchemaTable) *DeleteStatementBuilder {
 	}
 }
 
-func (sb *DeleteStatementBuilder) AddWhere(expr *pb.Expr) *DeleteStatementBuilder {
+func (sb *DeleteStatementBuilder) Where(expr *pb.Expr) *DeleteStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}

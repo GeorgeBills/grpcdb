@@ -80,6 +80,19 @@ func NewDelete(from *pb.SchemaTable) *StatementBuilder {
 	}
 }
 
+// NewTable returns a new update statement builder.
+func NewUpdate(table *pb.SchemaTable) *StatementBuilder {
+	return &StatementBuilder{
+		statement: &pb.Statement{
+			Statement: &pb.Statement_Update{
+				Update: &pb.Update{
+					Table: table,
+				},
+			},
+		},
+	}
+}
+
 // AddWhere adds a where clause.
 func (sb *StatementBuilder) AddWhere(expr *pb.Expr) *StatementBuilder {
 	if sb.err != nil {
@@ -92,6 +105,9 @@ func (sb *StatementBuilder) AddWhere(expr *pb.Expr) *StatementBuilder {
 	case *pb.Statement_Delete:
 		del := sb.statement.GetDelete()
 		del.Where = append(del.Where, expr)
+	case *pb.Statement_Update:
+		upd := sb.statement.GetUpdate()
+		upd.Where = append(upd.Where, expr)
 	default:
 		sb.err = fmt.Errorf("Statement type %T does not support AddWhere()", sb.statement.Statement)
 	}
@@ -156,6 +172,19 @@ func (sb *StatementBuilder) SetLimit(limit uint64) *StatementBuilder {
 func (sb *StatementBuilder) SetOffset(offset uint64) *StatementBuilder {
 	sel := sb.statement.GetSelect()
 	sel.Offset = offset
+	return sb
+}
+
+func (sb *StatementBuilder) Set(col string, to *pb.Expr) *StatementBuilder {
+	if sb.err != nil {
+		return sb
+	}
+	upd := sb.statement.GetUpdate()
+	newSet := &pb.Set{
+		Column: col,
+		To:     to,
+	}
+	upd.Set = append(upd.Set, newSet)
 	return sb
 }
 

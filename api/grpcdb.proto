@@ -5,13 +5,13 @@ package grpdcbpb;
 import "delete.proto";
 import "insert.proto";
 import "select.proto";
-
-// https://www.sqlite.org/syntaxdiagrams.html
+import "update.proto";
 
 message Statement {
     oneof statement {
         Select select = 1;
         Insert insert = 2;
-        Delete delete = 3;
+        Update update = 3;
+        Delete delete = 4;
     }
 }

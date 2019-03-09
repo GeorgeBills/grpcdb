@@ -13,35 +13,28 @@ import (
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/grpcdb.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/insert.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/select.proto
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/update.proto
 
 // TranslateStatement takes a grpcdb.Statement and returns SQL.
 func TranslateStatement(s *pb.Statement) (string, error) {
 	sb := &strings.Builder{}
+	var err error
 	switch s.Statement.(type) {
 	case *pb.Statement_Select:
-		sel := s.GetSelect()
-		err := translateSelectStatement(sb, sel)
-		if err != nil {
-			return "", err
-		}
-		return sb.String(), nil
+		err = translateSelectStatement(sb, s.GetSelect())
 	case *pb.Statement_Insert:
-		ins := s.GetInsert()
-		err := translateInsertStatement(sb, ins)
-		if err != nil {
-			return "", err
-		}
-		return sb.String(), nil
+		err = translateInsertStatement(sb, s.GetInsert())
 	case *pb.Statement_Delete:
-		del := s.GetDelete()
-		err := translateDeleteStatement(sb, del)
-		if err != nil {
-			return "", err
-		}
-		return sb.String(), nil
+		err = translateDeleteStatement(sb, s.GetDelete())
+	case *pb.Statement_Update:
+		err = translateUpdateStatement(sb, s.GetUpdate())
 	default:
-		return "", fmt.Errorf("Unrecognized statement type: %T", s.Statement)
+		err = fmt.Errorf("Unrecognized statement type: %T", s.Statement)
 	}
+	if err != nil {
+		return "", err
+	}
+	return sb.String(), nil
 }
 
 func translateSelectStatement(sb *strings.Builder, sel *pb.Select) error {
@@ -111,6 +104,31 @@ func translateDeleteStatement(sb *strings.Builder, del *pb.Delete) error {
 	sb.WriteString("DELETE FROM ")
 	translateSchemaTable(sb, del.From)
 	for _, where := range del.Where {
+		err := translateWhere(sb, where)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func translateUpdateStatement(sb *strings.Builder, upd *pb.Update) error {
+	sb.WriteString("UPDATE ")
+	translateSchemaTable(sb, upd.Table)
+	sb.WriteString(" SET ")
+	lasti := len(upd.Set) - 1
+	for i, set := range upd.Set {
+		sb.WriteString(set.Column)
+		sb.WriteString(" = ")
+		err := translateExpr(sb, set.To)
+		if err != nil {
+			return err
+		}
+		if i != lasti {
+			sb.WriteString(", ")
+		}
+	}
+	for _, where := range upd.Where {
 		err := translateWhere(sb, where)
 		if err != nil {
 			return err

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package grpdcbpb;
+
+import "common.proto";
+import "expression.proto";
+
+// https://www.sqlite.org/syntaxdiagrams.html#update-stmt
+
+message Update {
+    UpdateType update_or = 1;
+    SchemaTable table = 2;
+    repeated Set set = 3;
+    repeated Expr where = 4;
+}
+
+enum UpdateType {
+    UPDATE = 0;
+    OR_ROLLBACK = 1;
+    OR_ABORT = 2;
+    OR_REPLACE = 3;
+    OR_FAIL = 4;
+    OR_IGNORE = 5;
+}
+
+message Set {
+    string column = 1;
+    Expr to = 2;
+}

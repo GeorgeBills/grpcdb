@@ -82,6 +82,15 @@ func TestTranslation(t *testing.T) {
 				NewDelete(grpcdb.NewTable("t")).
 				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("0"), pb.BinaryOp_LTE)),
 		},
+		{
+			"UPDATE t SET a = 0, b = 1, c = 2 WHERE d >= 3",
+			grpcdb.
+				NewUpdate(grpcdb.NewTable("t")).
+				Set("a", grpcdb.NewLiteral("0")).
+				Set("b", grpcdb.NewLiteral("1")).
+				Set("c", grpcdb.NewLiteral("2")).
+				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("d"), grpcdb.NewLiteral("3"), pb.BinaryOp_GTE)),
+		},
 	}
 	for _, tt := range table {
 		t.Run(tt.sql, func(t *testing.T) {

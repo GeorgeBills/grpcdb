@@ -23,6 +23,8 @@ message UnaryExpr {
 enum UnaryOp {
     UNKNOWN_UO = 0;
     NOT = 1;
+    POS = 2;
+    NEG = 3;
 }
 
 // x = 3, a < b

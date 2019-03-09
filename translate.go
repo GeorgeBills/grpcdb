@@ -242,6 +242,7 @@ func translateExpr(sb *strings.Builder, e *pb.Expr) error {
 	case *pb.Expr_Col:
 		err = translateExprCol(sb, e.GetCol())
 	case *pb.Expr_UnaryExpr:
+		err = translateExprUnaryExpr(sb, e.GetUnaryExpr())
 	case *pb.Expr_BinaryExpr:
 		err = translateExprBinaryExpr(sb, e.GetBinaryExpr())
 	default:
@@ -262,6 +263,18 @@ func translateExprCol(sb *strings.Builder, col *pb.Col) error {
 	}
 	sb.WriteString(col.Column)
 	return nil
+}
+
+func translateExprUnaryExpr(sb *strings.Builder, ue *pb.UnaryExpr) error {
+	switch ue.Op {
+	case pb.UnaryOp_NOT:
+		sb.WriteString("NOT")
+	case pb.UnaryOp_POS:
+		sb.WriteString("+")
+	case pb.UnaryOp_NEG:
+		sb.WriteString("-")
+	}
+	return translateExpr(sb, ue.Expr)
 }
 
 func translateExprBinaryExpr(sb *strings.Builder, be *pb.BinaryExpr) error {

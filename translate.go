@@ -24,6 +24,12 @@ func TranslateStatement(s *Statement) (string, error) {
 				return "", err
 			}
 		}
+		for _, where := range sel.Where {
+			err := translateWhere(sb, where)
+			if err != nil {
+				return "", err
+			}
+		}
 		return sb.String(), nil
 	default:
 		return "", fmt.Errorf("Unrecognized statement type: %T", s.Statement)
@@ -46,6 +52,8 @@ func translateJoin(sb *strings.Builder, j *Join) error {
 			sb.WriteString("RIGHT OUTER ")
 		case JoinType_CROSS:
 			sb.WriteString("CROSS ")
+		default:
+			return fmt.Errorf("Unrecognized join type: %d", j.JoinType)
 		}
 	}
 	sb.WriteString(" JOIN ")
@@ -58,8 +66,17 @@ func translateJoin(sb *strings.Builder, j *Join) error {
 	return nil
 }
 
+func translateWhere(sb *strings.Builder, e *Expr) error {
+	sb.WriteString(" WHERE ")
+	err := translateExpr(sb, e)
+	return err
+}
+
 func translateExpr(sb *strings.Builder, e *Expr) error {
 	switch e.Expr.(type) {
+	case *Expr_Lit:
+		lit := e.GetLit()
+		sb.WriteString(lit)
 	case *Expr_Col:
 		col := e.GetCol()
 		if col.Schema != "" {
@@ -75,12 +92,32 @@ func translateExpr(sb *strings.Builder, e *Expr) error {
 	case *Expr_UnaryExpr:
 	case *Expr_BinaryExpr:
 		be := e.GetBinaryExpr()
-		translateExpr(sb, be.Expr1)
+		err := translateExpr(sb, be.Expr1)
+		if err != nil {
+			return err
+		}
 		switch be.Op {
 		case BinaryOp_EQ:
 			sb.WriteString(" = ")
+		case BinaryOp_NE:
+			sb.WriteString(" != ")
+		case BinaryOp_GT:
+			sb.WriteString(" > ")
+		case BinaryOp_LT:
+			sb.WriteString(" < ")
+		case BinaryOp_LTE:
+			sb.WriteString(" <= ")
+		case BinaryOp_GTE:
+			sb.WriteString(" >= ")
+		default:
+			return fmt.Errorf("Unrecognized binary op: %d", be.Op)
 		}
-		translateExpr(sb, be.Expr2)
+		err = translateExpr(sb, be.Expr2)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("Unrecognized expression type: %T", e.Expr)
 	}
 	return nil
 }

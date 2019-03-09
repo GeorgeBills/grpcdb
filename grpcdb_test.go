@@ -21,6 +21,12 @@ func TestTranslation(t *testing.T) {
 				NewSelect("mytable2", "a", "b"),
 		},
 		{
+			"SELECT a FROM t WHERE x > 3",
+			grpcdb.
+				NewSelect("t", "a").
+				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("3"), grpcdb.BinaryOp_GT)),
+		},
+		{
 			"SELECT x FROM t1 JOIN t2 ON t1.y = t2.z",
 			grpcdb.
 				NewSelect("t1", "x").

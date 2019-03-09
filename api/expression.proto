@@ -6,9 +6,10 @@ package grpcdb;
 
 message Expr {
     oneof expr {
-        Col col = 1;
-        UnaryExpr unary_expr = 2;
-        BinaryExpr binary_expr = 3;
+        string lit = 1;
+        Col col = 2;
+        UnaryExpr unary_expr = 3;
+        BinaryExpr binary_expr = 4;
     }
 }
 

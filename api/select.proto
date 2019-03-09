@@ -11,7 +11,7 @@ message Select {
     repeated string result_column = 2;
     string from = 3;
     repeated Join join = 4;
-    repeated Where where = 5;
+    repeated Expr where = 5;
     GroupByHaving group_by_having = 6;
     OrderBy order_by = 7;
     LimitOffset limit_offset = 8;  
@@ -36,9 +36,6 @@ enum JoinType {
     RIGHT = 3;
     RIGHT_OUTER = 4;
     CROSS = 5;
-}
-
-message Where {
 }
 
 message GroupByHaving {

@@ -52,14 +52,14 @@ func NewSelect(from string, columns ...string) *StatementBuilder {
 }
 
 // AddWhere adds a where clause.
-func (sb *StatementBuilder) AddWhere() *StatementBuilder {
+func (sb *StatementBuilder) AddWhere(expr *Expr) *StatementBuilder {
 	if sb.err != nil {
 		return sb
 	}
 	switch sb.statement.Statement.(type) {
 	case *Statement_Select:
 		sel := sb.statement.GetSelect()
-		sel.Where = append(sel.Where, &Where{})
+		sel.Where = append(sel.Where, expr)
 	default:
 		sb.err = fmt.Errorf("Statement type %T does not support AddWhere()", sb.statement.Statement)
 	}
@@ -137,6 +137,15 @@ func NewBinaryExpression(expr1, expr2 *Expr, op BinaryOp) *Expr {
 				Op:    op,
 				Expr2: expr2,
 			},
+		},
+	}
+}
+
+// NewLiteral returns a new literal.
+func NewLiteral(lit string) *Expr {
+	return &Expr{
+		Expr: &Expr_Lit{
+			Lit: lit,
 		},
 	}
 }

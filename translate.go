@@ -73,6 +73,19 @@ func translateSelectStatement(sb *strings.Builder, sel *pb.Select) error {
 			return err
 		}
 	}
+	if len(sel.GroupBy) > 0 {
+		sb.WriteString(" GROUP BY ")
+		lasti := len(sel.GroupBy) - 1
+		for i, groupBy := range sel.GroupBy {
+			err := translateExpr(sb, groupBy)
+			if err != nil {
+				return err
+			}
+			if i != lasti {
+				sb.WriteString(", ")
+			}
+		}
+	}
 	if sel.Limit != 0 {
 		sb.WriteString(" LIMIT ")
 		sb.WriteString(strconv.Itoa(int(sel.Limit)))

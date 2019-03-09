@@ -120,6 +120,16 @@ func (sb *UpdateStatementBuilder) AddWhere(expr *pb.Expr) *UpdateStatementBuilde
 	return sb
 }
 
+func (sb *SelectStatementBuilder) GroupBy(expr ...*pb.Expr) *SelectStatementBuilder {
+	if sb.err != nil {
+		return sb
+	}
+	for _, e := range expr {
+		sb.sel.GroupBy = append(sb.sel.GroupBy, e)
+	}
+	return sb
+}
+
 func And(expr, and *pb.Expr) *pb.Expr {
 	if expr == nil {
 		return and

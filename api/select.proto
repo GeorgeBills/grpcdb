@@ -12,10 +12,11 @@ message Select {
     string from = 3;
     repeated Join join = 4;
     Expr where = 5;
-    GroupByHaving group_by_having = 6;
-    repeated OrderingTerm order_by = 7;  
-    uint64 limit = 8;
-    uint64 offset = 9;
+    repeated Expr group_by = 6;
+    Expr having = 7;
+    repeated OrderingTerm order_by = 8;
+    uint64 limit = 9;
+    uint64 offset = 10;
 }
 
 enum DistinctAll {
@@ -37,13 +38,6 @@ enum JoinType {
     RIGHT = 3;
     RIGHT_OUTER = 4;
     CROSS = 5;
-}
-
-message GroupByHaving {
-    Having having = 6;
-}
-
-message Having {
 }
 
 message OrderingTerm {

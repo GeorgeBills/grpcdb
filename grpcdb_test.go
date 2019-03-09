@@ -66,6 +66,12 @@ func TestTranslation(t *testing.T) {
 				SetOffset(10),
 		},
 		{
+			"SELECT x FROM t GROUP BY a, b",
+			grpcdb.
+				NewSelect("t", "x").
+				GroupBy(grpcdb.NewLiteral("a"), grpcdb.NewLiteral("b")),
+		},
+		{
 			"INSERT INTO t (x, y, z) VALUES (1, 2, 3)",
 			grpcdb.
 				NewInsert(

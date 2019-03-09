@@ -111,30 +111,33 @@ func translateInsertStatement(sb *strings.Builder, ins *pb.Insert) error {
 	sb.WriteString("INTO ")
 	translateSchemaTable(sb, ins.Into)
 	sb.WriteString(" (" + strings.Join(ins.Columns, ", ") + ") ")
+	var err error
 	switch ins.ToInsert.Insert.(type) {
 	case *pb.ToInsert_Values:
-		sb.WriteString("VALUES ")
-		vals := ins.ToInsert.GetValues()
-		lasti := len(vals.Rows) - 1
-		for i, r := range vals.Rows {
-			sb.WriteString("(")
-			lastj := len(r.Values) - 1
-			for j, v := range r.Values {
-				translateExpr(sb, v)
-				if j != lastj {
-					sb.WriteString(", ")
-				}
-			}
-			sb.WriteString(")")
-			if i != lasti {
+		err = translateInsertValues(sb, ins.ToInsert.GetValues())
+	case *pb.ToInsert_Select:
+		err = translateSelectStatement(sb, ins.ToInsert.GetSelect())
+	}
+	return err
+}
+
+func translateInsertValues(sb *strings.Builder, vals *pb.Values) error {
+	sb.WriteString("VALUES ")
+	lasti := len(vals.Rows) - 1
+	for i, r := range vals.Rows {
+		sb.WriteString("(")
+		lastj := len(r.Values) - 1
+		for j, v := range r.Values {
+			translateExpr(sb, v)
+			if j != lastj {
 				sb.WriteString(", ")
 			}
 		}
-	case *pb.ToInsert_Select:
-		sel := ins.ToInsert.GetSelect()
-		translateSelectStatement(sb, sel)
+		sb.WriteString(")")
+		if i != lasti {
+			sb.WriteString(", ")
+		}
 	}
-
 	return nil
 }
 
@@ -232,55 +235,63 @@ func translateExpr(sb *strings.Builder, e *pb.Expr) error {
 	if e == nil {
 		return errors.New("expression was nil")
 	}
+	var err error
 	switch e.Expr.(type) {
 	case *pb.Expr_Lit:
-		lit := e.GetLit()
-		sb.WriteString(lit)
+		sb.WriteString(e.GetLit())
 	case *pb.Expr_Col:
-		col := e.GetCol()
-		if col.Schema != "" {
-			sb.WriteString(col.Schema + ".")
-		}
-		if col.Table != "" {
-			sb.WriteString(col.Table + ".")
-		}
-		if col.Column == "" {
-			return fmt.Errorf("column is required in %T", col)
-		}
-		sb.WriteString(col.Column)
+		err = translateExprCol(sb, e.GetCol())
 	case *pb.Expr_UnaryExpr:
 	case *pb.Expr_BinaryExpr:
-		be := e.GetBinaryExpr()
-		err := translateExpr(sb, be.Expr1)
-		if err != nil {
-			return err
-		}
-		switch be.Op {
-		case pb.BinaryOp_EQ:
-			sb.WriteString(" = ")
-		case pb.BinaryOp_NE:
-			sb.WriteString(" != ")
-		case pb.BinaryOp_GT:
-			sb.WriteString(" > ")
-		case pb.BinaryOp_LT:
-			sb.WriteString(" < ")
-		case pb.BinaryOp_LTE:
-			sb.WriteString(" <= ")
-		case pb.BinaryOp_GTE:
-			sb.WriteString(" >= ")
-		case pb.BinaryOp_AND:
-			sb.WriteString(" AND ")
-		case pb.BinaryOp_OR:
-			sb.WriteString(" OR ")
-		default:
-			return fmt.Errorf("Unrecognized binary op: %d", be.Op)
-		}
-		err = translateExpr(sb, be.Expr2)
-		if err != nil {
-			return err
-		}
+		err = translateExprBinaryExpr(sb, e.GetBinaryExpr())
 	default:
-		return fmt.Errorf("Unrecognized expression type: %T", e.Expr)
+		err = fmt.Errorf("Unrecognized expression type: %T", e.Expr)
+	}
+	return err
+}
+
+func translateExprCol(sb *strings.Builder, col *pb.Col) error {
+	if col.Schema != "" {
+		sb.WriteString(col.Schema + ".")
+	}
+	if col.Table != "" {
+		sb.WriteString(col.Table + ".")
+	}
+	if col.Column == "" {
+		return fmt.Errorf("column is required in %T", col)
+	}
+	sb.WriteString(col.Column)
+	return nil
+}
+
+func translateExprBinaryExpr(sb *strings.Builder, be *pb.BinaryExpr) error {
+	err := translateExpr(sb, be.Expr1)
+	if err != nil {
+		return err
+	}
+	switch be.Op {
+	case pb.BinaryOp_EQ:
+		sb.WriteString(" = ")
+	case pb.BinaryOp_NE:
+		sb.WriteString(" != ")
+	case pb.BinaryOp_GT:
+		sb.WriteString(" > ")
+	case pb.BinaryOp_LT:
+		sb.WriteString(" < ")
+	case pb.BinaryOp_LTE:
+		sb.WriteString(" <= ")
+	case pb.BinaryOp_GTE:
+		sb.WriteString(" >= ")
+	case pb.BinaryOp_AND:
+		sb.WriteString(" AND ")
+	case pb.BinaryOp_OR:
+		sb.WriteString(" OR ")
+	default:
+		return fmt.Errorf("Unrecognized binary op: %d", be.Op)
+	}
+	err = translateExpr(sb, be.Expr2)
+	if err != nil {
+		return err
 	}
 	return nil
 }

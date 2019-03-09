@@ -80,16 +80,20 @@ func translateInsertStatement(sb *strings.Builder, ins *pb.Insert) error {
 	sb.WriteString(" (" + strings.Join(ins.Columns, ", ") + ")")
 	sb.WriteString(" VALUES ")
 	vals := ins.ToInsert.GetValues()
-	for _, r := range vals.Rows {
+	lasti := len(vals.Rows) - 1
+	for i, r := range vals.Rows {
 		sb.WriteString("(")
-		last := len(r.Values) - 1
-		for i, v := range r.Values {
+		lastj := len(r.Values) - 1
+		for j, v := range r.Values {
 			translateExpr(sb, v)
-			if i != last {
+			if j != lastj {
 				sb.WriteString(", ")
 			}
 		}
 		sb.WriteString(")")
+		if i != lasti {
+			sb.WriteString(", ")
+		}
 	}
 	return nil
 }

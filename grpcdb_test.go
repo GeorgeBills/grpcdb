@@ -9,7 +9,7 @@ import (
 func TestTranslation(t *testing.T) {
 	table := []struct {
 		sql              string
-		statementBuilder *grpcdb.StatementBuilder
+		statementBuilder grpcdb.StatementBuilder
 	}{
 		{
 			"SELECT * FROM mytable1",

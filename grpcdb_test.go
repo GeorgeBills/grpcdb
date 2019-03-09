@@ -3,6 +3,7 @@ package grpcdb_test
 import (
 	"github.com/GeorgeBills/grpcdb"
 	pb "github.com/GeorgeBills/grpcdb/api"
+	"github.com/GeorgeBills/grpcdb/builder"
 	"testing"
 )
 
@@ -10,67 +11,67 @@ func TestTranslation(t *testing.T) {
 	table := []struct {
 		name             string
 		sql              string
-		statementBuilder grpcdb.StatementBuilder
+		statementBuilder builder.StatementBuilder
 	}{
 		{
 			"SELECT *",
 			"SELECT * FROM t",
-			grpcdb.
+			builder.
 				NewSelect("t", "*"),
 		},
 		{
 			"SELECT columns",
 			"SELECT a, b, c FROM t",
-			grpcdb.
+			builder.
 				NewSelect("t", "a", "b", "c"),
 		},
 		{
 			"SELECT WHERE",
 			"SELECT a FROM t WHERE x > 3",
-			grpcdb.
+			builder.
 				NewSelect("t", "a").
-				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("3"), pb.BinaryOp_GT)),
+				AddWhere(builder.NewBinaryExpression(builder.NewColumn("x"), builder.NewLiteral("3"), pb.BinaryOp_GT)),
 		},
 		{
 			"WHERE AND",
 			"SELECT a FROM t WHERE 3 < x AND 2 != y",
-			grpcdb.
+			builder.
 				NewSelect("t", "a").
-				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewLiteral("3"), grpcdb.NewColumn("x"), pb.BinaryOp_LT)).
-				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewLiteral("2"), grpcdb.NewColumn("y"), pb.BinaryOp_NE)),
+				AddWhere(builder.NewBinaryExpression(builder.NewLiteral("3"), builder.NewColumn("x"), pb.BinaryOp_LT)).
+				AddWhere(builder.NewBinaryExpression(builder.NewLiteral("2"), builder.NewColumn("y"), pb.BinaryOp_NE)),
 		},
 		{
 			"JOIN",
 			"SELECT x FROM t1 JOIN t2 ON t1.y = t2.z",
-			grpcdb.
+			builder.
 				NewSelect("t1", "x").
-				AddJoinEq("t2", grpcdb.NewTableColumn("t1", "y"), grpcdb.NewTableColumn("t2", "z")),
+				AddJoinEq("t2", builder.NewTableColumn("t1", "y"), builder.NewTableColumn("t2", "z")),
 		},
 		{
 			"ORDER BY",
 			"SELECT x FROM t ORDER BY y DESC",
-			grpcdb.
+			builder.
 				NewSelect("t", "x").
-				AddOrderBy(grpcdb.NewColumn("y"), pb.OrderingDirection_DESC),
+				AddOrderBy(builder.NewColumn("y"), pb.OrderingDirection_DESC),
 		},
 		{
 			"LIMIT",
 			"SELECT x FROM t LIMIT 123",
-			grpcdb.
+			builder.
 				NewSelect("t", "x").
 				SetLimit(123),
 		},
 		{
 			"OFFSET",
 			"SELECT x FROM t OFFSET 456",
-			grpcdb.
+			builder.
 				NewSelect("t", "x").
 				SetOffset(456),
 		},
 		{
 			"LIMIT OFFSET",
 			"SELECT x FROM t LIMIT 10 OFFSET 10",
-			grpcdb.
+			builder.
 				NewSelect("t", "x").
 				SetLimit(10).
 				SetOffset(10),
@@ -78,69 +79,69 @@ func TestTranslation(t *testing.T) {
 		{
 			"GROUP BY",
 			"SELECT x FROM t GROUP BY a, b",
-			grpcdb.
+			builder.
 				NewSelect("t", "x").
-				GroupBy(grpcdb.NewLiteral("a"), grpcdb.NewLiteral("b")),
+				GroupBy(builder.NewLiteral("a"), builder.NewLiteral("b")),
 		},
 		{
 			"HAVING",
 			"SELECT x FROM t GROUP BY a HAVING c < 0 AND d = 3",
-			grpcdb.
+			builder.
 				NewSelect("t", "x").
-				GroupBy(grpcdb.NewLiteral("a")).
-				Having(grpcdb.NewBinaryExpression(grpcdb.NewColumn("c"), grpcdb.NewLiteral("0"), pb.BinaryOp_LT)).
-				Having(grpcdb.NewBinaryExpression(grpcdb.NewColumn("d"), grpcdb.NewLiteral("3"), pb.BinaryOp_EQ)),
+				GroupBy(builder.NewLiteral("a")).
+				Having(builder.NewBinaryExpression(builder.NewColumn("c"), builder.NewLiteral("0"), pb.BinaryOp_LT)).
+				Having(builder.NewBinaryExpression(builder.NewColumn("d"), builder.NewLiteral("3"), pb.BinaryOp_EQ)),
 		},
 		{
 			"INSERT INTO (single row)",
 			"INSERT INTO t (x, y, z) VALUES (1, 2, 3)",
-			grpcdb.
-				NewInsert(grpcdb.NewTable("t"), "x", "y", "z").
+			builder.
+				NewInsert(builder.NewTable("t"), "x", "y", "z").
 				Values([][]string{{"1", "2", "3"}}),
 		},
 		{
 			"INSERT INTO (multiple rows)",
 			"INSERT INTO t (x, y) VALUES (1, 2), (3, 4)",
-			grpcdb.
-				NewInsert(grpcdb.NewTable("t"), "x", "y").
+			builder.
+				NewInsert(builder.NewTable("t"), "x", "y").
 				Values([][]string{{"1", "2"}, {"3", "4"}}),
 		},
 		{
 			"INSERT INTO SELECT FROM",
 			"INSERT INTO t1 (a, b) SELECT c, d FROM t2",
-			grpcdb.
-				NewInsert(grpcdb.NewTable("t1"), "a", "b").
-				From(grpcdb.NewSelect("t2", "c", "d")),
+			builder.
+				NewInsert(builder.NewTable("t1"), "a", "b").
+				From(builder.NewSelect("t2", "c", "d")),
 		},
 		{
 			"DELETE FROM",
 			"DELETE FROM t",
-			grpcdb.NewDelete(grpcdb.NewTable("t")),
+			builder.NewDelete(builder.NewTable("t")),
 		},
 		{
 			"DELETE FROM WHERE",
 			"DELETE FROM t WHERE x <= 0",
-			grpcdb.
-				NewDelete(grpcdb.NewTable("t")).
-				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("0"), pb.BinaryOp_LTE)),
+			builder.
+				NewDelete(builder.NewTable("t")).
+				AddWhere(builder.NewBinaryExpression(builder.NewColumn("x"), builder.NewLiteral("0"), pb.BinaryOp_LTE)),
 		},
 		{
 			"UPDATE",
 			"UPDATE t SET a = b, c = d",
-			grpcdb.
-				NewUpdate(grpcdb.NewTable("t")).
-				Set("a", grpcdb.NewLiteral("b")).
-				Set("c", grpcdb.NewLiteral("d")),
+			builder.
+				NewUpdate(builder.NewTable("t")).
+				Set("a", builder.NewLiteral("b")).
+				Set("c", builder.NewLiteral("d")),
 		},
 		{
 			"UPDATE WHERE",
 			"UPDATE t SET a = 0, b = 1, c = 2 WHERE d >= 3",
-			grpcdb.
-				NewUpdate(grpcdb.NewTable("t")).
-				Set("a", grpcdb.NewLiteral("0")).
-				Set("b", grpcdb.NewLiteral("1")).
-				Set("c", grpcdb.NewLiteral("2")).
-				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("d"), grpcdb.NewLiteral("3"), pb.BinaryOp_GTE)),
+			builder.
+				NewUpdate(builder.NewTable("t")).
+				Set("a", builder.NewLiteral("0")).
+				Set("b", builder.NewLiteral("1")).
+				Set("c", builder.NewLiteral("2")).
+				AddWhere(builder.NewBinaryExpression(builder.NewColumn("d"), builder.NewLiteral("3"), pb.BinaryOp_GTE)),
 		},
 	}
 	for _, tt := range table {

@@ -110,24 +110,31 @@ func translateInsertStatement(sb *strings.Builder, ins *pb.Insert) error {
 	}
 	sb.WriteString("INTO ")
 	translateSchemaTable(sb, ins.Into)
-	sb.WriteString(" (" + strings.Join(ins.Columns, ", ") + ")")
-	sb.WriteString(" VALUES ")
-	vals := ins.ToInsert.GetValues()
-	lasti := len(vals.Rows) - 1
-	for i, r := range vals.Rows {
-		sb.WriteString("(")
-		lastj := len(r.Values) - 1
-		for j, v := range r.Values {
-			translateExpr(sb, v)
-			if j != lastj {
+	sb.WriteString(" (" + strings.Join(ins.Columns, ", ") + ") ")
+	switch ins.ToInsert.Insert.(type) {
+	case *pb.ToInsert_Values:
+		sb.WriteString("VALUES ")
+		vals := ins.ToInsert.GetValues()
+		lasti := len(vals.Rows) - 1
+		for i, r := range vals.Rows {
+			sb.WriteString("(")
+			lastj := len(r.Values) - 1
+			for j, v := range r.Values {
+				translateExpr(sb, v)
+				if j != lastj {
+					sb.WriteString(", ")
+				}
+			}
+			sb.WriteString(")")
+			if i != lasti {
 				sb.WriteString(", ")
 			}
 		}
-		sb.WriteString(")")
-		if i != lasti {
-			sb.WriteString(", ")
-		}
+	case *pb.ToInsert_Select:
+		sel := ins.ToInsert.GetSelect()
+		translateSelectStatement(sb, sel)
 	}
+
 	return nil
 }
 

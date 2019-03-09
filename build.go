@@ -68,12 +68,11 @@ func NewSelect(from string, columns ...string) *SelectStatementBuilder {
 }
 
 // NewInsert returns a new insert statement builder.
-func NewInsert(into *pb.SchemaTable, toInsert *pb.ToInsert, columns ...string) *InsertStatementBuilder {
+func NewInsert(into *pb.SchemaTable, columns ...string) *InsertStatementBuilder {
 	return &InsertStatementBuilder{
 		insert: &pb.Insert{
-			Into:     into,
-			Columns:  columns,
-			ToInsert: toInsert,
+			Into:    into,
+			Columns: columns,
 		},
 	}
 }
@@ -137,6 +136,7 @@ func (sb *SelectStatementBuilder) Having(expr *pb.Expr) *SelectStatementBuilder 
 	}
 	if sb.sel.GroupBy == nil {
 		sb.err = errors.New("HAVING without GROUP BY is invalid; you must add the GROUP BY first")
+		return sb
 	}
 	sb.sel.Having = And(sb.sel.Having, expr)
 	return sb
@@ -213,6 +213,10 @@ func Statement(statement *pb.Statement, err error) (*pb.Statement, error) {
 	return statement, nil
 }
 
+func (sb *SelectStatementBuilder) Select() (*pb.Select, error) {
+	return sb.sel, sb.err
+}
+
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *SelectStatementBuilder) Statement() (*pb.Statement, error) {
@@ -237,8 +241,7 @@ func (sb *UpdateStatementBuilder) Statement() (*pb.Statement, error) {
 	return Statement(&pb.Statement{Statement: &pb.Statement_Update{Update: sb.update}}, sb.err)
 }
 
-// NewLiteralInsertValues returns rows of values for an insert statement.
-func NewLiteralInsertValues(literals [][]string) *pb.ToInsert {
+func (sb *InsertStatementBuilder) Values(literals [][]string) *InsertStatementBuilder {
 	vals := &pb.Values{}
 	for _, row := range literals {
 		newRow := &pb.Row{}
@@ -248,12 +251,26 @@ func NewLiteralInsertValues(literals [][]string) *pb.ToInsert {
 		}
 		vals.Rows = append(vals.Rows, newRow)
 	}
-	toInsert := &pb.ToInsert{
+	sb.insert.ToInsert = &pb.ToInsert{
 		Insert: &pb.ToInsert_Values{
 			Values: vals,
 		},
 	}
-	return toInsert
+	return sb
+}
+
+func (sb *InsertStatementBuilder) From(ssb *SelectStatementBuilder) *InsertStatementBuilder {
+	sel, err := ssb.Select()
+	if err != nil {
+		sb.err = err
+		return sb
+	}
+	sb.insert.ToInsert = &pb.ToInsert{
+		Insert: &pb.ToInsert_Select{
+			Select: sel,
+		},
+	}
+	return sb
 }
 
 // NewTable returns a new schema table where only the table is set.

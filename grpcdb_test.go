@@ -95,21 +95,22 @@ func TestTranslation(t *testing.T) {
 			"INSERT INTO (single row)",
 			"INSERT INTO t (x, y, z) VALUES (1, 2, 3)",
 			grpcdb.
-				NewInsert(
-					grpcdb.NewTable("t"),
-					grpcdb.NewLiteralInsertValues([][]string{{"1", "2", "3"}}),
-					"x", "y", "z",
-				),
+				NewInsert(grpcdb.NewTable("t"), "x", "y", "z").
+				Values([][]string{{"1", "2", "3"}}),
 		},
 		{
 			"INSERT INTO (multiple rows)",
 			"INSERT INTO t (x, y) VALUES (1, 2), (3, 4)",
 			grpcdb.
-				NewInsert(
-					grpcdb.NewTable("t"),
-					grpcdb.NewLiteralInsertValues([][]string{{"1", "2"}, {"3", "4"}}),
-					"x", "y",
-				),
+				NewInsert(grpcdb.NewTable("t"), "x", "y").
+				Values([][]string{{"1", "2"}, {"3", "4"}}),
+		},
+		{
+			"INSERT INTO SELECT FROM",
+			"INSERT INTO t1 (a, b) SELECT c, d FROM t2",
+			grpcdb.
+				NewInsert(grpcdb.NewTable("t1"), "a", "b").
+				From(grpcdb.NewSelect("t2", "c", "d")),
 		},
 		{
 			"DELETE FROM",

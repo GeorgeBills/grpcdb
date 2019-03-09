@@ -9,5 +9,5 @@ import "expression.proto";
 
 message Delete {
     SchemaTable from = 1;
-    repeated Expr where = 2;
+    Expr where = 2;
 }

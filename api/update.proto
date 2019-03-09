@@ -11,7 +11,7 @@ message Update {
     UpdateType update_or = 1;
     SchemaTable table = 2;
     repeated Set set = 3;
-    repeated Expr where = 4;
+    Expr where = 4;
 }
 
 enum UpdateType {

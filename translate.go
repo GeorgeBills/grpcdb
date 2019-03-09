@@ -1,6 +1,7 @@
 package grpcdb
 
 import (
+	"errors"
 	"fmt"
 	pb "github.com/GeorgeBills/grpcdb/api"
 	"strconv"
@@ -14,6 +15,15 @@ import (
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/insert.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/select.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/update.proto
+
+type invalidStatementError struct {
+	context *pb.Statement
+	wrapped error
+}
+
+func (ise *invalidStatementError) Error() string {
+	return fmt.Sprintf("Error translating statement %+v: %v", ise.context, ise.wrapped)
+}
 
 // TranslateStatement takes a grpcdb.Statement and returns SQL.
 func TranslateStatement(s *pb.Statement) (string, error) {
@@ -32,7 +42,10 @@ func TranslateStatement(s *pb.Statement) (string, error) {
 		err = fmt.Errorf("Unrecognized statement type: %T", s.Statement)
 	}
 	if err != nil {
-		return "", err
+		return "", &invalidStatementError{
+			context: s,
+			wrapped: err,
+		}
 	}
 	return sb.String(), nil
 }
@@ -47,8 +60,9 @@ func translateSelectStatement(sb *strings.Builder, sel *pb.Select) error {
 			return err
 		}
 	}
-	for _, where := range sel.Where {
-		err := translateWhere(sb, where)
+	if sel.Where != nil {
+		sb.WriteString(" WHERE ")
+		err := translateExpr(sb, sel.Where)
 		if err != nil {
 			return err
 		}
@@ -103,8 +117,9 @@ func translateInsertStatement(sb *strings.Builder, ins *pb.Insert) error {
 func translateDeleteStatement(sb *strings.Builder, del *pb.Delete) error {
 	sb.WriteString("DELETE FROM ")
 	translateSchemaTable(sb, del.From)
-	for _, where := range del.Where {
-		err := translateWhere(sb, where)
+	if del.Where != nil {
+		sb.WriteString(" WHERE ")
+		err := translateExpr(sb, del.Where)
 		if err != nil {
 			return err
 		}
@@ -128,8 +143,9 @@ func translateUpdateStatement(sb *strings.Builder, upd *pb.Update) error {
 			sb.WriteString(", ")
 		}
 	}
-	for _, where := range upd.Where {
-		err := translateWhere(sb, where)
+	if upd.Where != nil {
+		sb.WriteString(" WHERE ")
+		err := translateExpr(sb, upd.Where)
 		if err != nil {
 			return err
 		}
@@ -167,17 +183,8 @@ func translateJoin(sb *strings.Builder, j *pb.Join) error {
 	sb.WriteString(" JOIN ")
 	sb.WriteString(j.Table)
 	sb.WriteString(" ON ")
-	if j.On == nil {
-		return fmt.Errorf("nil expression in join %+v", j)
-	}
 	translateExpr(sb, j.On)
 	return nil
-}
-
-func translateWhere(sb *strings.Builder, e *pb.Expr) error {
-	sb.WriteString(" WHERE ")
-	err := translateExpr(sb, e)
-	return err
 }
 
 func translateOrderBy(sb *strings.Builder, e *pb.OrderingTerm) error {
@@ -198,6 +205,9 @@ func translateOrderBy(sb *strings.Builder, e *pb.OrderingTerm) error {
 }
 
 func translateExpr(sb *strings.Builder, e *pb.Expr) error {
+	if e == nil {
+		return errors.New("expression was nil")
+	}
 	switch e.Expr.(type) {
 	case *pb.Expr_Lit:
 		lit := e.GetLit()
@@ -234,6 +244,10 @@ func translateExpr(sb *strings.Builder, e *pb.Expr) error {
 			sb.WriteString(" <= ")
 		case pb.BinaryOp_GTE:
 			sb.WriteString(" >= ")
+		case pb.BinaryOp_AND:
+			sb.WriteString(" AND ")
+		case pb.BinaryOp_OR:
+			sb.WriteString(" OR ")
 		default:
 			return fmt.Errorf("Unrecognized binary op: %d", be.Op)
 		}

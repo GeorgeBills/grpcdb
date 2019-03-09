@@ -28,6 +28,13 @@ func TestTranslation(t *testing.T) {
 				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("3"), pb.BinaryOp_GT)),
 		},
 		{
+			"SELECT a FROM t WHERE 3 < x AND 2 != y",
+			grpcdb.
+				NewSelect("t", "a").
+				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewLiteral("3"), grpcdb.NewColumn("x"), pb.BinaryOp_LT)).
+				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewLiteral("2"), grpcdb.NewColumn("y"), pb.BinaryOp_NE)),
+		},
+		{
 			"SELECT x FROM t1 JOIN t2 ON t1.y = t2.z",
 			grpcdb.
 				NewSelect("t1", "x").

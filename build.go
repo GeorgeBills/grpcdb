@@ -101,17 +101,24 @@ func (sb *StatementBuilder) AddWhere(expr *pb.Expr) *StatementBuilder {
 	switch sb.statement.Statement.(type) {
 	case *pb.Statement_Select:
 		sel := sb.statement.GetSelect()
-		sel.Where = append(sel.Where, expr)
+		sel.Where = And(sel.Where, expr)
 	case *pb.Statement_Delete:
 		del := sb.statement.GetDelete()
-		del.Where = append(del.Where, expr)
+		del.Where = And(del.Where, expr)
 	case *pb.Statement_Update:
 		upd := sb.statement.GetUpdate()
-		upd.Where = append(upd.Where, expr)
+		upd.Where = And(upd.Where, expr)
 	default:
 		sb.err = fmt.Errorf("Statement type %T does not support AddWhere()", sb.statement.Statement)
 	}
 	return sb
+}
+
+func And(expr, and *pb.Expr) *pb.Expr {
+	if expr == nil {
+		return and
+	}
+	return NewBinaryExpression(expr, and, pb.BinaryOp_AND)
 }
 
 // AddJoin adds a join clause.

@@ -40,4 +40,6 @@ enum BinaryOp {
     GTE = 4;
     LT = 5;
     LTE = 6;
+    AND = 7;
+    OR = 8;
 }

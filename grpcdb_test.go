@@ -77,6 +77,10 @@ func TestTranslation(t *testing.T) {
 				),
 		},
 		{
+			"DELETE FROM t",
+			grpcdb.NewDelete(grpcdb.NewTable("t")),
+		},
+		{
 			"DELETE FROM t WHERE x <= 0",
 			grpcdb.
 				NewDelete(grpcdb.NewTable("t")).

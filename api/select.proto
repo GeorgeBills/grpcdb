@@ -13,7 +13,7 @@ message Select {
     repeated Join join = 4;
     repeated Expr where = 5;
     GroupByHaving group_by_having = 6;
-    OrderBy order_by = 7;
+    repeated OrderingTerm order_by = 7;
     LimitOffset limit_offset = 8;  
 }
 
@@ -45,11 +45,15 @@ message GroupByHaving {
 message Having {
 }
 
-message OrderBy {
-    repeated OrderingTerm ordering_term = 1;
+message OrderingTerm {
+    Expr by = 1;
+    bool collate = 2;
+    OrderingDirection dir = 3;
 }
 
-message OrderingTerm {
+enum OrderingDirection {
+    ASC = 0;
+    DESC = 1;
 }
 
 message LimitOffset {

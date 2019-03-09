@@ -33,6 +33,12 @@ func TestTranslation(t *testing.T) {
 				NewSelect("t1", "x").
 				AddJoinEq("t2", grpcdb.NewTableColumn("t1", "y"), grpcdb.NewTableColumn("t2", "z")),
 		},
+		{
+			"SELECT x FROM t ORDER BY y DESC",
+			grpcdb.
+				NewSelect("t", "x").
+				AddOrderBy(grpcdb.NewColumn("y"), pb.OrderingDirection_DESC),
+		},
 	}
 	for _, tt := range table {
 		t.Run(tt.sql, func(t *testing.T) {

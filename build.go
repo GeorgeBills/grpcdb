@@ -95,6 +95,25 @@ func (sb *StatementBuilder) AddJoinEq(table string, expr1, expr2 *pb.Expr) *Stat
 	return sb.AddJoin(table, eq)
 }
 
+// AddOrderBy adds an ordering clause.
+func (sb *StatementBuilder) AddOrderBy(expr *pb.Expr, dir pb.OrderingDirection) *StatementBuilder {
+	if sb.err != nil {
+		return sb
+	}
+	switch sb.statement.Statement.(type) {
+	case *pb.Statement_Select:
+		sel := sb.statement.GetSelect()
+		ob := &pb.OrderingTerm{
+			By:  expr,
+			Dir: dir,
+		}
+		sel.OrderBy = append(sel.OrderBy, ob)
+	default:
+		sb.err = fmt.Errorf("Statement type %T does not support AddOrderBy()", sb.statement.Statement)
+	}
+	return sb
+}
+
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *StatementBuilder) Statement() (*pb.Statement, error) {

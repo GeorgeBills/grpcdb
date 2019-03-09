@@ -31,6 +31,12 @@ func TranslateStatement(s *pb.Statement) (string, error) {
 				return "", err
 			}
 		}
+		for _, orderBy := range sel.OrderBy {
+			err := translateOrderBy(sb, orderBy)
+			if err != nil {
+				return "", err
+			}
+		}
 		return sb.String(), nil
 	default:
 		return "", fmt.Errorf("Unrecognized statement type: %T", s.Statement)
@@ -71,6 +77,23 @@ func translateWhere(sb *strings.Builder, e *pb.Expr) error {
 	sb.WriteString(" WHERE ")
 	err := translateExpr(sb, e)
 	return err
+}
+
+func translateOrderBy(sb *strings.Builder, e *pb.OrderingTerm) error {
+	sb.WriteString(" ORDER BY ")
+	err := translateExpr(sb, e.By)
+	if err != nil {
+		return err
+	}
+	switch e.Dir {
+	case pb.OrderingDirection_ASC:
+		sb.WriteString(" ASC")
+	case pb.OrderingDirection_DESC:
+		sb.WriteString(" DESC")
+	default:
+		return fmt.Errorf("Unrecognized ordering direction: %d", e.Dir)
+	}
+	return nil
 }
 
 func translateExpr(sb *strings.Builder, e *pb.Expr) error {

@@ -2,6 +2,7 @@ package grpcdb_test
 
 import (
 	"github.com/GeorgeBills/grpcdb"
+	pb "github.com/GeorgeBills/grpcdb/api"
 	"testing"
 )
 
@@ -24,7 +25,7 @@ func TestTranslation(t *testing.T) {
 			"SELECT a FROM t WHERE x > 3",
 			grpcdb.
 				NewSelect("t", "a").
-				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("3"), grpcdb.BinaryOp_GT)),
+				AddWhere(grpcdb.NewBinaryExpression(grpcdb.NewColumn("x"), grpcdb.NewLiteral("3"), pb.BinaryOp_GT)),
 		},
 		{
 			"SELECT x FROM t1 JOIN t2 ON t1.y = t2.z",

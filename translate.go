@@ -2,18 +2,19 @@ package grpcdb
 
 import (
 	"fmt"
+	pb "github.com/GeorgeBills/grpcdb/api"
 	"strings"
 )
 
-//go:generate protoc -I api/ --go_out=plugins=grpc:. api/expression.proto
-//go:generate protoc -I api/ --go_out=plugins=grpc:. api/grpcdb.proto
-//go:generate protoc -I api/ --go_out=plugins=grpc:. api/select.proto
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/expression.proto
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/grpcdb.proto
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/select.proto
 
 // TranslateStatement takes a grpcdb.Statement and returns SQL.
-func TranslateStatement(s *Statement) (string, error) {
+func TranslateStatement(s *pb.Statement) (string, error) {
 	sb := &strings.Builder{}
 	switch s.Statement.(type) {
-	case *Statement_Select:
+	case *pb.Statement_Select:
 		sel := s.GetSelect()
 		sb.WriteString("SELECT ")
 		sb.WriteString(strings.Join(sel.ResultColumn, ", ") + " ")
@@ -36,21 +37,21 @@ func TranslateStatement(s *Statement) (string, error) {
 	}
 }
 
-func translateJoin(sb *strings.Builder, j *Join) error {
+func translateJoin(sb *strings.Builder, j *pb.Join) error {
 	if j.Natural {
 		sb.WriteString("NATURAL ")
 	}
-	if j.JoinType != JoinType_INNER {
+	if j.JoinType != pb.JoinType_INNER {
 		switch j.JoinType {
-		case JoinType_LEFT:
+		case pb.JoinType_LEFT:
 			sb.WriteString("LEFT ")
-		case JoinType_LEFT_OUTER:
+		case pb.JoinType_LEFT_OUTER:
 			sb.WriteString("LEFT OUTER ")
-		case JoinType_RIGHT:
+		case pb.JoinType_RIGHT:
 			sb.WriteString("RIGHT ")
-		case JoinType_RIGHT_OUTER:
+		case pb.JoinType_RIGHT_OUTER:
 			sb.WriteString("RIGHT OUTER ")
-		case JoinType_CROSS:
+		case pb.JoinType_CROSS:
 			sb.WriteString("CROSS ")
 		default:
 			return fmt.Errorf("Unrecognized join type: %d", j.JoinType)
@@ -66,18 +67,18 @@ func translateJoin(sb *strings.Builder, j *Join) error {
 	return nil
 }
 
-func translateWhere(sb *strings.Builder, e *Expr) error {
+func translateWhere(sb *strings.Builder, e *pb.Expr) error {
 	sb.WriteString(" WHERE ")
 	err := translateExpr(sb, e)
 	return err
 }
 
-func translateExpr(sb *strings.Builder, e *Expr) error {
+func translateExpr(sb *strings.Builder, e *pb.Expr) error {
 	switch e.Expr.(type) {
-	case *Expr_Lit:
+	case *pb.Expr_Lit:
 		lit := e.GetLit()
 		sb.WriteString(lit)
-	case *Expr_Col:
+	case *pb.Expr_Col:
 		col := e.GetCol()
 		if col.Schema != "" {
 			sb.WriteString(col.Schema + ".")
@@ -89,25 +90,25 @@ func translateExpr(sb *strings.Builder, e *Expr) error {
 			return fmt.Errorf("column is required in %T", col)
 		}
 		sb.WriteString(col.Column)
-	case *Expr_UnaryExpr:
-	case *Expr_BinaryExpr:
+	case *pb.Expr_UnaryExpr:
+	case *pb.Expr_BinaryExpr:
 		be := e.GetBinaryExpr()
 		err := translateExpr(sb, be.Expr1)
 		if err != nil {
 			return err
 		}
 		switch be.Op {
-		case BinaryOp_EQ:
+		case pb.BinaryOp_EQ:
 			sb.WriteString(" = ")
-		case BinaryOp_NE:
+		case pb.BinaryOp_NE:
 			sb.WriteString(" != ")
-		case BinaryOp_GT:
+		case pb.BinaryOp_GT:
 			sb.WriteString(" > ")
-		case BinaryOp_LT:
+		case pb.BinaryOp_LT:
 			sb.WriteString(" < ")
-		case BinaryOp_LTE:
+		case pb.BinaryOp_LTE:
 			sb.WriteString(" <= ")
-		case BinaryOp_GTE:
+		case pb.BinaryOp_GTE:
 			sb.WriteString(" >= ")
 		default:
 			return fmt.Errorf("Unrecognized binary op: %d", be.Op)

@@ -10,22 +10,22 @@ type StatementBuilder interface {
 }
 
 type SelectStatementBuilder struct {
-	sel *pb.Statement_Select // select is a keyword
+	sel *pb.Select // select is a keyword
 	err error
 }
 
 type UpdateStatementBuilder struct {
-	update *pb.Statement_Update
+	update *pb.Update
 	err    error
 }
 
 type DeleteStatementBuilder struct {
-	delete *pb.Statement_Delete
+	delete *pb.Delete
 	err    error
 }
 
 type InsertStatementBuilder struct {
-	insert *pb.Statement_Insert
+	insert *pb.Insert
 	err    error
 }
 
@@ -59,11 +59,9 @@ type InsertStatementBuilder struct {
 // NewSelect returns a new select statement builder.
 func NewSelect(from string, columns ...string) *SelectStatementBuilder {
 	return &SelectStatementBuilder{
-		sel: &pb.Statement_Select{
-			Select: &pb.Select{
-				ResultColumn: columns,
-				From:         from,
-			},
+		sel: &pb.Select{
+			ResultColumn: columns,
+			From:         from,
 		},
 	}
 }
@@ -71,12 +69,10 @@ func NewSelect(from string, columns ...string) *SelectStatementBuilder {
 // NewInsert returns a new insert statement builder.
 func NewInsert(into *pb.SchemaTable, toInsert *pb.ToInsert, columns ...string) *InsertStatementBuilder {
 	return &InsertStatementBuilder{
-		insert: &pb.Statement_Insert{
-			Insert: &pb.Insert{
-				Into:     into,
-				Columns:  columns,
-				ToInsert: toInsert,
-			},
+		insert: &pb.Insert{
+			Into:     into,
+			Columns:  columns,
+			ToInsert: toInsert,
 		},
 	}
 }
@@ -84,10 +80,8 @@ func NewInsert(into *pb.SchemaTable, toInsert *pb.ToInsert, columns ...string) *
 // NewDelete returns a new delete statement builder.
 func NewDelete(from *pb.SchemaTable) *DeleteStatementBuilder {
 	return &DeleteStatementBuilder{
-		delete: &pb.Statement_Delete{
-			Delete: &pb.Delete{
-				From: from,
-			},
+		delete: &pb.Delete{
+			From: from,
 		},
 	}
 }
@@ -95,10 +89,8 @@ func NewDelete(from *pb.SchemaTable) *DeleteStatementBuilder {
 // NewUpdate returns a new update statement builder.
 func NewUpdate(table *pb.SchemaTable) *UpdateStatementBuilder {
 	return &UpdateStatementBuilder{
-		update: &pb.Statement_Update{
-			Update: &pb.Update{
-				Table: table,
-			},
+		update: &pb.Update{
+			Table: table,
 		},
 	}
 }
@@ -108,7 +100,7 @@ func (sb *SelectStatementBuilder) AddWhere(expr *pb.Expr) *SelectStatementBuilde
 	if sb.err != nil {
 		return sb
 	}
-	sb.sel.Select.Where = And(sb.sel.Select.Where, expr)
+	sb.sel.Where = And(sb.sel.Where, expr)
 	return sb
 }
 
@@ -116,7 +108,7 @@ func (sb *DeleteStatementBuilder) AddWhere(expr *pb.Expr) *DeleteStatementBuilde
 	if sb.err != nil {
 		return sb
 	}
-	sb.delete.Delete.Where = And(sb.delete.Delete.Where, expr)
+	sb.delete.Where = And(sb.delete.Where, expr)
 	return sb
 }
 
@@ -124,7 +116,7 @@ func (sb *UpdateStatementBuilder) AddWhere(expr *pb.Expr) *UpdateStatementBuilde
 	if sb.err != nil {
 		return sb
 	}
-	sb.update.Update.Where = And(sb.update.Update.Where, expr)
+	sb.update.Where = And(sb.update.Where, expr)
 	return sb
 }
 
@@ -144,7 +136,7 @@ func (sb *SelectStatementBuilder) AddJoin(table string, joinExpr *pb.Expr) *Sele
 		Table: table,
 		On:    joinExpr,
 	}
-	sb.sel.Select.Join = append(sb.sel.Select.Join, join)
+	sb.sel.Join = append(sb.sel.Join, join)
 	return sb
 }
 
@@ -162,7 +154,7 @@ func (sb *SelectStatementBuilder) AddOrderBy(expr *pb.Expr, dir pb.OrderingDirec
 	if sb.err != nil {
 		return sb
 	}
-	sb.sel.Select.OrderBy = append(sb.sel.Select.OrderBy, &pb.OrderingTerm{
+	sb.sel.OrderBy = append(sb.sel.OrderBy, &pb.OrderingTerm{
 		By:  expr,
 		Dir: dir,
 	})
@@ -171,13 +163,13 @@ func (sb *SelectStatementBuilder) AddOrderBy(expr *pb.Expr, dir pb.OrderingDirec
 
 // SetLimit sets the limit on the statement.
 func (sb *SelectStatementBuilder) SetLimit(limit uint64) *SelectStatementBuilder {
-	sb.sel.Select.Limit = limit
+	sb.sel.Limit = limit
 	return sb
 }
 
 // SetOffset sets the offset on the statement.
 func (sb *SelectStatementBuilder) SetOffset(offset uint64) *SelectStatementBuilder {
-	sb.sel.Select.Offset = offset
+	sb.sel.Offset = offset
 	return sb
 }
 
@@ -185,7 +177,7 @@ func (sb *UpdateStatementBuilder) Set(col string, to *pb.Expr) *UpdateStatementB
 	if sb.err != nil {
 		return sb
 	}
-	sb.update.Update.Set = append(sb.update.Update.Set, &pb.Set{
+	sb.update.Set = append(sb.update.Set, &pb.Set{
 		Column: col,
 		To:     to,
 	})
@@ -202,25 +194,25 @@ func Statement(statement *pb.Statement, err error) (*pb.Statement, error) {
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *SelectStatementBuilder) Statement() (*pb.Statement, error) {
-	return Statement(&pb.Statement{Statement: sb.sel}, sb.err)
+	return Statement(&pb.Statement{Statement: &pb.Statement_Select{Select: sb.sel}}, sb.err)
 }
 
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *InsertStatementBuilder) Statement() (*pb.Statement, error) {
-	return Statement(&pb.Statement{Statement: sb.insert}, sb.err)
+	return Statement(&pb.Statement{Statement: &pb.Statement_Insert{Insert: sb.insert}}, sb.err)
 }
 
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *DeleteStatementBuilder) Statement() (*pb.Statement, error) {
-	return Statement(&pb.Statement{Statement: sb.delete}, sb.err)
+	return Statement(&pb.Statement{Statement: &pb.Statement_Delete{Delete: sb.delete}}, sb.err)
 }
 
 // Statement returns either the correctly built statement or the first error
 // that occurred.
 func (sb *UpdateStatementBuilder) Statement() (*pb.Statement, error) {
-	return Statement(&pb.Statement{Statement: sb.update}, sb.err)
+	return Statement(&pb.Statement{Statement: &pb.Statement_Update{Update: sb.update}}, sb.err)
 }
 
 // NewLiteralInsertValues returns rows of values for an insert statement.

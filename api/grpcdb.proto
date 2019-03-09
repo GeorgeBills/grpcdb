@@ -3,11 +3,13 @@ syntax = "proto3";
 package grpdcbpb;
 
 import "select.proto";
+import "insert.proto";
 
 // https://www.sqlite.org/syntaxdiagrams.html
 
 message Statement {
     oneof statement {
         Select select = 1;
+        Insert insert = 2;
     }
 }

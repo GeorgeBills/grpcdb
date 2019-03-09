@@ -58,6 +58,15 @@ func TestTranslation(t *testing.T) {
 				SetLimit(10).
 				SetOffset(10),
 		},
+		{
+			"INSERT INTO t (x, y, z) VALUES (1, 2, 3)",
+			grpcdb.
+				NewInsert(
+					grpcdb.NewTable("t"),
+					grpcdb.NewLiteralInsertValues([][]string{{"1", "2", "3"}}),
+					"x", "y", "z",
+				),
+		},
 	}
 	for _, tt := range table {
 		t.Run(tt.sql, func(t *testing.T) {

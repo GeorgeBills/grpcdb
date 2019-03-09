@@ -52,6 +52,25 @@ func NewSelect(from string, columns ...string) *StatementBuilder {
 	}
 }
 
+// NewInsert returns a new insert statement builder.
+func NewInsert(into *pb.SchemaTable, values *pb.Values, columns ...string) *StatementBuilder {
+	return &StatementBuilder{
+		statement: &pb.Statement{
+			Statement: &pb.Statement_Insert{
+				Insert: &pb.Insert{
+					Into:    into,
+					Columns: columns,
+					ToInsert: &pb.ToInsert{
+						Insert: &pb.ToInsert_Values{
+							values,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 // AddWhere adds a where clause.
 func (sb *StatementBuilder) AddWhere(expr *pb.Expr) *StatementBuilder {
 	if sb.err != nil {
@@ -135,6 +154,33 @@ func (sb *StatementBuilder) Statement() (*pb.Statement, error) {
 		return nil, sb.err
 	}
 	return sb.statement, nil
+}
+
+// NewLiteralInsertValues returns rows of values for an insert statement.
+func NewLiteralInsertValues(literals [][]string) *pb.Values {
+	vals := &pb.Values{}
+	for _, row := range literals {
+		newRow := &pb.Row{}
+		for _, lit := range row {
+			newVal := NewLiteral(lit)
+			newRow.Values = append(newRow.Values, newVal)
+		}
+		vals.Rows = append(vals.Rows, newRow)
+	}
+	return vals
+}
+
+// NewTable returns a new schema table where only the table is set.
+func NewTable(table string) *pb.SchemaTable {
+	return NewSchemaTable("", table)
+}
+
+// NewSchemaTable returns a new schema table.
+func NewSchemaTable(schema, table string) *pb.SchemaTable {
+	return &pb.SchemaTable{
+		Schema: schema,
+		Table:  table,
+	}
 }
 
 // NewColumn returns a new column expression where only the column is set.

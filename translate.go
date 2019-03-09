@@ -9,6 +9,7 @@ import (
 
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/expression.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/grpcdb.proto
+//go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/insert.proto
 //go:generate protoc -I api/ --go_out=plugins=grpc:api/ api/select.proto
 
 // TranslateStatement takes a grpcdb.Statement and returns SQL.
@@ -17,39 +18,87 @@ func TranslateStatement(s *pb.Statement) (string, error) {
 	switch s.Statement.(type) {
 	case *pb.Statement_Select:
 		sel := s.GetSelect()
-		sb.WriteString("SELECT ")
-		sb.WriteString(strings.Join(sel.ResultColumn, ", ") + " ")
-		sb.WriteString("FROM " + sel.From)
-		for _, join := range sel.Join {
-			err := translateJoin(sb, join)
-			if err != nil {
-				return "", err
-			}
+		err := translateSelectStatement(sb, sel)
+		if err != nil {
+			return "", err
 		}
-		for _, where := range sel.Where {
-			err := translateWhere(sb, where)
-			if err != nil {
-				return "", err
-			}
-		}
-		for _, orderBy := range sel.OrderBy {
-			err := translateOrderBy(sb, orderBy)
-			if err != nil {
-				return "", err
-			}
-		}
-		if sel.Limit != 0 {
-			sb.WriteString(" LIMIT ")
-			sb.WriteString(strconv.Itoa(int(sel.Limit)))
-		}
-		if sel.Offset != 0 {
-			sb.WriteString(" OFFSET ")
-			sb.WriteString(strconv.Itoa(int(sel.Offset)))
+		return sb.String(), nil
+	case *pb.Statement_Insert:
+		ins := s.GetInsert()
+		err := translateInsertStatement(sb, ins)
+		if err != nil {
+			return "", err
 		}
 		return sb.String(), nil
 	default:
 		return "", fmt.Errorf("Unrecognized statement type: %T", s.Statement)
 	}
+}
+
+func translateSelectStatement(sb *strings.Builder, sel *pb.Select) error {
+	sb.WriteString("SELECT ")
+	sb.WriteString(strings.Join(sel.ResultColumn, ", ") + " ")
+	sb.WriteString("FROM " + sel.From)
+	for _, join := range sel.Join {
+		err := translateJoin(sb, join)
+		if err != nil {
+			return err
+		}
+	}
+	for _, where := range sel.Where {
+		err := translateWhere(sb, where)
+		if err != nil {
+			return err
+		}
+	}
+	for _, orderBy := range sel.OrderBy {
+		err := translateOrderBy(sb, orderBy)
+		if err != nil {
+			return err
+		}
+	}
+	if sel.Limit != 0 {
+		sb.WriteString(" LIMIT ")
+		sb.WriteString(strconv.Itoa(int(sel.Limit)))
+	}
+	if sel.Offset != 0 {
+		sb.WriteString(" OFFSET ")
+		sb.WriteString(strconv.Itoa(int(sel.Offset)))
+	}
+	return nil
+}
+
+func translateInsertStatement(sb *strings.Builder, ins *pb.Insert) error {
+	switch ins.Insert {
+	case pb.InsertType_INSERT:
+		sb.WriteString("INSERT ")
+	case pb.InsertType_REPLACE:
+		sb.WriteString("REPLACE ")
+	}
+	sb.WriteString("INTO ")
+	translateSchemaTable(sb, ins.Into)
+	sb.WriteString(" (" + strings.Join(ins.Columns, ", ") + ")")
+	sb.WriteString(" VALUES ")
+	vals := ins.ToInsert.GetValues()
+	for _, r := range vals.Rows {
+		sb.WriteString("(")
+		last := len(r.Values) - 1
+		for i, v := range r.Values {
+			translateExpr(sb, v)
+			if i != last {
+				sb.WriteString(", ")
+			}
+		}
+		sb.WriteString(")")
+	}
+	return nil
+}
+
+func translateSchemaTable(sb *strings.Builder, table *pb.SchemaTable) {
+	if table.Schema != "" {
+		sb.WriteString(table.Schema)
+	}
+	sb.WriteString(table.Table)
 }
 
 func translateJoin(sb *strings.Builder, j *pb.Join) error {

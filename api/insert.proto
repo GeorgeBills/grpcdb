@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package grpdcbpb;
+
+import "expression.proto";
+import "select.proto";
+
+// https://www.sqlite.org/syntaxdiagrams.html#insert-stmt
+
+message Insert {
+    InsertType insert = 1;
+    SchemaTable into = 2;
+    repeated string columns = 3;
+    ToInsert to_insert = 4;
+}
+
+enum InsertType {
+    INSERT = 0;
+    REPLACE = 1;
+}
+
+message SchemaTable {
+    string schema = 1;
+    string table = 2;
+}
+
+message ToInsert {
+    oneof insert {
+        Values values = 1;
+        Select select = 2;
+        DefaultValues default = 3; 
+    }
+}
+
+message Values {
+    repeated Row rows = 1;
+}
+
+message Row {
+    repeated Expr values = 1;
+}
+
+message DefaultValues{}

@@ -53,18 +53,14 @@ func NewSelect(from string, columns ...string) *StatementBuilder {
 }
 
 // NewInsert returns a new insert statement builder.
-func NewInsert(into *pb.SchemaTable, values *pb.Values, columns ...string) *StatementBuilder {
+func NewInsert(into *pb.SchemaTable, toInsert *pb.ToInsert, columns ...string) *StatementBuilder {
 	return &StatementBuilder{
 		statement: &pb.Statement{
 			Statement: &pb.Statement_Insert{
 				Insert: &pb.Insert{
-					Into:    into,
-					Columns: columns,
-					ToInsert: &pb.ToInsert{
-						Insert: &pb.ToInsert_Values{
-							values,
-						},
-					},
+					Into:     into,
+					Columns:  columns,
+					ToInsert: toInsert,
 				},
 			},
 		},
@@ -157,7 +153,7 @@ func (sb *StatementBuilder) Statement() (*pb.Statement, error) {
 }
 
 // NewLiteralInsertValues returns rows of values for an insert statement.
-func NewLiteralInsertValues(literals [][]string) *pb.Values {
+func NewLiteralInsertValues(literals [][]string) *pb.ToInsert {
 	vals := &pb.Values{}
 	for _, row := range literals {
 		newRow := &pb.Row{}
@@ -167,7 +163,12 @@ func NewLiteralInsertValues(literals [][]string) *pb.Values {
 		}
 		vals.Rows = append(vals.Rows, newRow)
 	}
-	return vals
+	toInsert := &pb.ToInsert{
+		Insert: &pb.ToInsert_Values{
+			Values: vals,
+		},
+	}
+	return toInsert
 }
 
 // NewTable returns a new schema table where only the table is set.

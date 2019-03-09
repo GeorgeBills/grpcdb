@@ -24,7 +24,6 @@ message ToInsert {
     oneof insert {
         Values values = 1;
         Select select = 2;
-        DefaultValues default = 3; 
     }
 }
 
@@ -35,5 +34,3 @@ message Values {
 message Row {
     repeated Expr values = 1;
 }
-
-message DefaultValues{}

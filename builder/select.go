@@ -25,7 +25,7 @@ func (sb *SelectStatementBuilder) Where(expr *pb.Expr) *SelectStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}
-	sb.sel.Where = And(sb.sel.Where, expr)
+	sb.sel.Where = All(sb.sel.Where, expr)
 	return sb
 }
 
@@ -47,7 +47,7 @@ func (sb *SelectStatementBuilder) Having(expr *pb.Expr) *SelectStatementBuilder 
 		sb.err = errors.New("HAVING without GROUP BY is invalid; you must add the GROUP BY first")
 		return sb
 	}
-	sb.sel.Having = And(sb.sel.Having, expr)
+	sb.sel.Having = All(sb.sel.Having, expr)
 	return sb
 }
 
@@ -69,7 +69,7 @@ func (sb *SelectStatementBuilder) AddJoinEq(table string, expr1, expr2 *pb.Expr)
 	if sb.err != nil {
 		return sb
 	}
-	eq := NewBinaryExpression(expr1, expr2, pb.BinaryOp_EQ)
+	eq := newBinaryExpression(expr1, expr2, pb.BinaryOp_EQ)
 	return sb.AddJoin(table, eq)
 }
 

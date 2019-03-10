@@ -22,7 +22,7 @@ func (sb *DeleteStatementBuilder) Where(expr *pb.Expr) *DeleteStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}
-	sb.delete.Where = And(sb.delete.Where, expr)
+	sb.delete.Where = Any(sb.delete.Where, expr)
 	return sb
 }
 

@@ -33,7 +33,7 @@ func (sb *UpdateStatementBuilder) Where(expr *pb.Expr) *UpdateStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}
-	sb.update.Where = And(sb.update.Where, expr)
+	sb.update.Where = All(sb.update.Where, expr)
 	return sb
 }
 

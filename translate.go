@@ -268,7 +268,7 @@ func translateExprCol(sb *strings.Builder, col *pb.Col) error {
 func translateExprUnaryExpr(sb *strings.Builder, ue *pb.UnaryExpr) error {
 	switch ue.Op {
 	case pb.UnaryOp_NOT:
-		sb.WriteString("NOT")
+		sb.WriteString("NOT ")
 	case pb.UnaryOp_POS:
 		sb.WriteString("+")
 	case pb.UnaryOp_NEG:

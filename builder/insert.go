@@ -30,7 +30,7 @@ func (sb *InsertStatementBuilder) Values(literals [][]string) *InsertStatementBu
 	for _, row := range literals {
 		newRow := &pb.Row{}
 		for _, lit := range row {
-			newVal := NewLiteral(lit)
+			newVal := Lit(lit)
 			newRow.Values = append(newRow.Values, newVal)
 		}
 		vals.Rows = append(vals.Rows, newRow)

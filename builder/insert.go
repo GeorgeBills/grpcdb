@@ -9,8 +9,8 @@ type InsertStatementBuilder struct {
 	err    error
 }
 
-// NewInsert returns a new insert statement builder.
-func NewInsert(into *pb.SchemaTable, columns ...string) *InsertStatementBuilder {
+// Insert returns a new insert statement builder.
+func Insert(into *pb.SchemaTable, columns ...string) *InsertStatementBuilder {
 	return &InsertStatementBuilder{
 		insert: &pb.Insert{
 			Into:    into,

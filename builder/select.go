@@ -10,8 +10,8 @@ type SelectStatementBuilder struct {
 	err error
 }
 
-// NewSelect returns a new select statement builder.
-func NewSelect(from string, columns ...string) *SelectStatementBuilder {
+// Select returns a new select statement builder.
+func Select(from string, columns ...string) *SelectStatementBuilder {
 	return &SelectStatementBuilder{
 		sel: &pb.Select{
 			ResultColumn: columns,
@@ -64,8 +64,8 @@ func (sb *SelectStatementBuilder) AddJoin(table string, joinExpr *pb.Expr) *Sele
 	return sb
 }
 
-// AddJoinEq adds a join clause where two columns are equal.
-func (sb *SelectStatementBuilder) AddJoinEq(table string, expr1, expr2 *pb.Expr) *SelectStatementBuilder {
+// JoinEq adds a join clause where two columns are equal.
+func (sb *SelectStatementBuilder) JoinEq(table string, expr1, expr2 *pb.Expr) *SelectStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}
@@ -73,8 +73,8 @@ func (sb *SelectStatementBuilder) AddJoinEq(table string, expr1, expr2 *pb.Expr)
 	return sb.AddJoin(table, eq)
 }
 
-// AddOrderBy adds an ordering clause.
-func (sb *SelectStatementBuilder) AddOrderBy(expr *pb.Expr, dir pb.OrderingDirection) *SelectStatementBuilder {
+// OrderBy adds an ordering clause.
+func (sb *SelectStatementBuilder) OrderBy(expr *pb.Expr, dir pb.OrderingDirection) *SelectStatementBuilder {
 	if sb.err != nil {
 		return sb
 	}
@@ -85,14 +85,14 @@ func (sb *SelectStatementBuilder) AddOrderBy(expr *pb.Expr, dir pb.OrderingDirec
 	return sb
 }
 
-// SetLimit sets the limit on the statement.
-func (sb *SelectStatementBuilder) SetLimit(limit uint64) *SelectStatementBuilder {
+// Limit sets the limit on the statement.
+func (sb *SelectStatementBuilder) Limit(limit uint64) *SelectStatementBuilder {
 	sb.sel.Limit = limit
 	return sb
 }
 
-// SetOffset sets the offset on the statement.
-func (sb *SelectStatementBuilder) SetOffset(offset uint64) *SelectStatementBuilder {
+// Offset sets the offset on the statement.
+func (sb *SelectStatementBuilder) Offset(offset uint64) *SelectStatementBuilder {
 	sb.sel.Offset = offset
 	return sb
 }

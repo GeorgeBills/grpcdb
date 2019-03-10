@@ -43,8 +43,8 @@ func Statement(statement *pb.Statement, err error) (*pb.Statement, error) {
 	return statement, nil
 }
 
-// NewTable returns a new schema table where only the table is set.
-func NewTable(table string) *pb.SchemaTable {
+// Table returns a new schema table where only the table is set.
+func Table(table string) *pb.SchemaTable {
 	return NewSchemaTable("", table)
 }
 

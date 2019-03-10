@@ -9,8 +9,8 @@ type UpdateStatementBuilder struct {
 	err    error
 }
 
-// NewUpdate returns a new update statement builder.
-func NewUpdate(table *pb.SchemaTable) *UpdateStatementBuilder {
+// Update returns a new update statement builder.
+func Update(table *pb.SchemaTable) *UpdateStatementBuilder {
 	return &UpdateStatementBuilder{
 		update: &pb.Update{
 			Table: table,

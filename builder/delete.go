@@ -9,8 +9,8 @@ type DeleteStatementBuilder struct {
 	err    error
 }
 
-// NewDelete returns a new delete statement builder.
-func NewDelete(from *pb.SchemaTable) *DeleteStatementBuilder {
+// Delete returns a new delete statement builder.
+func Delete(from *pb.SchemaTable) *DeleteStatementBuilder {
 	return &DeleteStatementBuilder{
 		delete: &pb.Delete{
 			From: from,

@@ -37,6 +37,18 @@ func TestTranslation(t *testing.T) {
 				Where(NEq(Num(2), Col("y"))),
 		},
 		{
+			"IS NULL",
+			"SELECT a FROM t WHERE b IS NULL",
+			Select("t", "a").
+				Where(Is(Col("b"), Null())),
+		},
+		{
+			"IS NOT NULL",
+			"SELECT a FROM t WHERE b IS NOT NULL",
+			Select("t", "a").
+				Where(IsNot(Col("b"), Null())),
+		},
+		{
 			"JOIN",
 			"SELECT x FROM t1 JOIN t2 ON t1.y = t2.z",
 			Select("t1", "x").

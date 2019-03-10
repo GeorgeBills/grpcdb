@@ -65,4 +65,6 @@ enum BinaryOp {
     LTE = 6;
     AND = 7;
     OR = 8;
+    IS = 9;
+    IS_NOT = 10;
 }

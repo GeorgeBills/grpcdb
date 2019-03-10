@@ -289,6 +289,8 @@ func translateExprUnaryExpr(sb *strings.Builder, ue *pb.UnaryExpr) error {
 		sb.WriteString("+")
 	case pb.UnaryOp_NEG:
 		sb.WriteString("-")
+	default:
+		return fmt.Errorf("Unrecognized unary op: %d", ue.Op)
 	}
 	return translateExpr(sb, ue.Expr)
 }
@@ -315,6 +317,10 @@ func translateExprBinaryExpr(sb *strings.Builder, be *pb.BinaryExpr) error {
 		sb.WriteString(" AND ")
 	case pb.BinaryOp_OR:
 		sb.WriteString(" OR ")
+	case pb.BinaryOp_IS:
+		sb.WriteString(" IS ")
+	case pb.BinaryOp_IS_NOT:
+		sb.WriteString(" IS NOT ")
 	default:
 		return fmt.Errorf("Unrecognized binary op: %d", be.Op)
 	}

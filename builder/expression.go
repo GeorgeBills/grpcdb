@@ -30,6 +30,15 @@ func Num(num float64) *pb.Expr {
 	})
 }
 
+var null = lit(&pb.Lit{
+	Lit: &pb.Lit_Null{},
+})
+
+// Null returns the null literal.
+func Null() *pb.Expr {
+	return null
+}
+
 // Col returns a new column expression where only the column is set.
 func Col(column string) *pb.Expr {
 	return SchemaTableCol("", "", column)
@@ -141,4 +150,12 @@ func And(expr1, expr2 *pb.Expr) *pb.Expr {
 
 func Or(expr1, expr2 *pb.Expr) *pb.Expr {
 	return newBinaryExpression(expr1, expr2, pb.BinaryOp_OR)
+}
+
+func Is(expr1, expr2 *pb.Expr) *pb.Expr {
+	return newBinaryExpression(expr1, expr2, pb.BinaryOp_IS)
+}
+
+func IsNot(expr1, expr2 *pb.Expr) *pb.Expr {
+	return newBinaryExpression(expr1, expr2, pb.BinaryOp_IS_NOT)
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpdcbpb;
+package grpcdbpb;
 
 import "expression.proto";
 

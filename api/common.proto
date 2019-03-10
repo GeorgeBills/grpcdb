@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpdcbpb;
+package grpcdbpb;
 
 message SchemaTable {
     string schema = 1;

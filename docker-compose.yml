@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   database:
-    image: postgres:11.1
+    build: testdata/
     ports: 
       - "5432:5432"
     environment:

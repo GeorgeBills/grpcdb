@@ -1,0 +1,4 @@
+.git/
+*.exe
+*.pb.go
+coverage*

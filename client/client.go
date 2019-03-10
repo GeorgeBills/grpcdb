@@ -20,10 +20,8 @@ func main() {
 	}
 	defer conn.Close()
 	client := grpcdbpb.NewGRPCDBClient(conn)
-	statement, err := Select("t", "x").
-		GroupBy(Col("a")).
-		Having(LT(Col("c"), Num(0))).
-		Having(Eq(Col("d"), Num(3))).
+	statement, err := Select("person", "full_name").
+		OrderBy(Col("birth"), grpcdbpb.OrderingDirection_DESC).
 		Statement()
 	if err != nil {
 		log.Fatal(err)

@@ -61,6 +61,7 @@ func (h *handler) Query(ctx context.Context, statement *grpcdbpb.Statement) (*gr
 	res, err := h.db.Exec(sql)
 	if err != nil {
 		log.Printf("Error running statement: %v", err)
+		return nil, err
 	}
 	log.Print(res)
 	return &grpcdbpb.Result{}, nil

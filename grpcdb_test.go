@@ -27,14 +27,14 @@ func TestTranslation(t *testing.T) {
 			"SELECT WHERE",
 			"SELECT a FROM t WHERE x > 3",
 			NewSelect("t", "a").
-				Where(GT(Col("x"), Lit("3"))),
+				Where(GT(Col("x"), Num(3))),
 		},
 		{
 			"WHERE AND",
 			"SELECT a FROM t WHERE 3 < x AND 2 != y",
 			NewSelect("t", "a").
-				Where(LT(Lit("3"), Col("x"))).
-				Where(NEq(Lit("2"), Col("y"))),
+				Where(LT(Num(3), Col("x"))).
+				Where(NEq(Num(2), Col("y"))),
 		},
 		{
 			"JOIN",
@@ -71,15 +71,15 @@ func TestTranslation(t *testing.T) {
 			"GROUP BY",
 			"SELECT x FROM t GROUP BY a, b",
 			NewSelect("t", "x").
-				GroupBy(Lit("a"), Lit("b")),
+				GroupBy(Col("a"), Col("b")),
 		},
 		{
 			"HAVING",
 			"SELECT x FROM t GROUP BY a HAVING c < 0 AND d = 3",
 			NewSelect("t", "x").
-				GroupBy(Lit("a")).
-				Having(LT(Col("c"), Lit("0"))).
-				Having(Eq(Col("d"), Lit("3"))),
+				GroupBy(Col("a")).
+				Having(LT(Col("c"), Num(0))).
+				Having(Eq(Col("d"), Num(3))),
 		},
 		{
 			"INSERT INTO (single row)",
@@ -108,23 +108,23 @@ func TestTranslation(t *testing.T) {
 			"DELETE FROM WHERE",
 			"DELETE FROM t WHERE NOT x <= 0",
 			NewDelete(NewTable("t")).
-				Where(Not(LTE(Col("x"), Lit("0")))),
+				Where(Not(LTE(Col("x"), Num(0)))),
 		},
 		{
 			"UPDATE",
 			"UPDATE t SET a = b, c = d",
 			NewUpdate(NewTable("t")).
-				Set("a", Lit("b")).
-				Set("c", Lit("d")),
+				Set("a", Col("b")).
+				Set("c", Col("d")),
 		},
 		{
 			"UPDATE WHERE",
 			"UPDATE t SET a = 0, b = 1, c = 2 WHERE d >= 3",
 			NewUpdate(NewTable("t")).
-				Set("a", Lit("0")).
-				Set("b", Lit("1")).
-				Set("c", Lit("2")).
-				Where(GTE(Col("d"), Lit("3"))),
+				Set("a", Num(0)).
+				Set("b", Num(1)).
+				Set("c", Num(2)).
+				Where(GTE(Col("d"), Num(3))),
 		},
 	}
 	for _, tt := range table {

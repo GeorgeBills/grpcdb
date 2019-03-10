@@ -8,12 +8,33 @@ import "common.proto";
 
 message Expr {
     oneof expr {
-        string lit = 1;
+        Lit lit = 1;
         Col col = 2;
         UnaryExpr unary_expr = 3;
         BinaryExpr binary_expr = 4;
     }
 }
+
+message Lit {
+    oneof lit {
+        string str = 1;
+        double num = 2;
+        bytes blob = 3;
+        Null null = 4;
+        bool boolean = 5;
+        CurrentTime current_time = 6;
+        CurrentDate current_date = 7;
+        CurrentTimestamp current_timestamp = 8;
+    }
+}
+
+message Null {}
+
+message CurrentTime {}
+
+message CurrentDate {}
+
+message CurrentTimestamp {}
 
 message UnaryExpr {
     UnaryOp op = 1;

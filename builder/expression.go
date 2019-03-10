@@ -4,13 +4,30 @@ import (
 	pb "github.com/GeorgeBills/grpcdb/api"
 )
 
-// Lit returns a new literal.
-func Lit(lit string) *pb.Expr {
+func lit(lit *pb.Lit) *pb.Expr {
 	return &pb.Expr{
 		Expr: &pb.Expr_Lit{
 			Lit: lit,
 		},
 	}
+}
+
+// Str returns a new string literal.
+func Str(str string) *pb.Expr {
+	return lit(&pb.Lit{
+		Lit: &pb.Lit_Str{
+			Str: str,
+		},
+	})
+}
+
+// Num returns a new numeric literal.
+func Num(num float64) *pb.Expr {
+	return lit(&pb.Lit{
+		Lit: &pb.Lit_Num{
+			Num: num,
+		},
+	})
 }
 
 // Col returns a new column expression where only the column is set.

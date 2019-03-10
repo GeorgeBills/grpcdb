@@ -238,7 +238,7 @@ func translateExpr(sb *strings.Builder, e *pb.Expr) error {
 	var err error
 	switch e.Expr.(type) {
 	case *pb.Expr_Lit:
-		sb.WriteString(e.GetLit())
+		err = translateExprLit(sb, e.GetLit())
 	case *pb.Expr_Col:
 		err = translateExprCol(sb, e.GetCol())
 	case *pb.Expr_UnaryExpr:
@@ -249,6 +249,22 @@ func translateExpr(sb *strings.Builder, e *pb.Expr) error {
 		err = fmt.Errorf("Unrecognized expression type: %T", e.Expr)
 	}
 	return err
+}
+
+func translateExprLit(sb *strings.Builder, lit *pb.Lit) error {
+	switch lit.Lit.(type) {
+	case *pb.Lit_Str:
+		sb.WriteString(lit.GetStr())
+	case *pb.Lit_Num:
+		sb.WriteString(strconv.FormatFloat(lit.GetNum(), 'f', -1, 64))
+	case *pb.Lit_Boolean:
+		sb.WriteString(strconv.FormatBool(lit.GetBoolean()))
+	case *pb.Lit_Null:
+		sb.WriteString("NULL")
+	default:
+		return fmt.Errorf("Unsupported literal type: %T", lit.Lit)
+	}
+	return nil
 }
 
 func translateExprCol(sb *strings.Builder, col *pb.Col) error {

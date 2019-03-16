@@ -55,6 +55,16 @@ func TestTranslation(t *testing.T) {
 				JoinEq("t2", TableCol("t1", "y"), TableCol("t2", "z")),
 		},
 		{
+			"big SELECT",
+			`SELECT x, y, z FROM t1 JOIN t2 ON t1.a = t2.b WHERE c > 3 AND d IS NOT NULL ORDER BY e ASC GROUP BY f, g`,
+			Select("t1", "x", "y", "z").
+				JoinEq("t2", TableCol("t1", "a"), TableCol("t2", "b")).
+				Where(GT(Col("c"), Num(3))).
+				Where(IsNot(Col("d"), Null())).
+				OrderBy(Col("e"), pb.OrderingDirection_ASC).
+				GroupBy(Col("f"), Col("g")),
+		},
+		{
 			"ORDER BY",
 			"SELECT x FROM t ORDER BY y DESC",
 			Select("t", "x").
